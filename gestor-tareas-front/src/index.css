@@ -1,3 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* index.css */
+body {
+  background-color: #92cae4; /* Cambiar el color de fondo */
+  color: #333; /* Color de texto */
+}
