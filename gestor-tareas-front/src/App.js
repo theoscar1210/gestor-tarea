@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+// Importación de dependencias y componentes necesarios
+import React, { useState, useEffect } from "react"; // Hooks de React para manejar estado y efectos secundarios
+import "bootstrap/dist/css/bootstrap.min.css"; // Importación de Bootstrap para estilizar la aplicación
 
+// Importación de funciones para interactuar con la API
 import {
   obtenerTareas,
   agregarTarea,
@@ -10,67 +12,74 @@ import {
 } from "./api"; // Importamos las funciones de API
 
 function App() {
-  const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [fechaVencimiento, setFechaVencimiento] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [filtro, setFiltro] = useState("todas");
-  const [tareas, setTareas] = useState([]);
-  // Cargar tareas desde el backend
+  // Declaración de estados para manejar la información de las tareas y el formulario
+  const [titulo, setTitulo] = useState(""); // Estado para el título de la tarea
+  const [descripcion, setDescripcion] = useState(""); // Estado para la descripción de la tarea
+  const [fechaVencimiento, setFechaVencimiento] = useState(""); // Estado para la fecha de vencimiento
+  const [categoria, setCategoria] = useState(""); // Estado para la categoría de la tarea
+  const [filtro, setFiltro] = useState("todas"); // Estado para el filtro de tareas (todas, realizadas, pendientes)
+  const [tareas, setTareas] = useState([]); // Estado para almacenar las tareas
+
+  // Cargar tareas desde el localStorage cuando la aplicación se inicia
   useEffect(() => {
     const tareasGuardadas = JSON.parse(localStorage.getItem("tareas"));
     if (tareasGuardadas) {
-      setTareas(tareasGuardadas);
+      setTareas(tareasGuardadas); // Si hay tareas guardadas, las cargamos
     }
   }, []);
-  //cargar tareas desde el backend
+
+  // Cargar tareas desde el backend al inicio (API)
   useEffect(() => {
-    obtenerTareas()
+    obtenerTareas() // Llamada a la API para obtener las tareas
       .then((response) => {
-        setTareas(response.data);
+        setTareas(response.data); // Si la llamada es exitosa, actualizamos el estado con las tareas obtenidas
       })
       .catch((error) => {
-        console.error("Hubo un error al obtener las tareas:", error);
+        console.error("Hubo un error al obtener las tareas:", error); // Si hay un error, lo mostramos
       });
   }, []);
 
+  // Función para obtener la clase CSS según la categoría de la tarea
   const obtenerClaseCategoria = (categoria) => {
     switch (categoria) {
       case "Trabajo":
-        return "bg-primary text-white";
+        return "bg-primary text-white"; // Si es "Trabajo", aplicamos clase azul
       case "Personal":
-        return "bg-success text-white";
+        return "bg-success text-white"; // Si es "Personal", aplicamos clase verde
       case "Urgente":
-        return "bg-danger text-white";
+        return "bg-danger text-white"; // Si es "Urgente", aplicamos clase roja
       default:
-        return "bg-light";
+        return "bg-light"; // Para cualquier otra categoría, clase gris
     }
   };
 
+  // Función para obtener la clase del badge según la categoría
   const obtenerClaseBadge = (categoria) => {
     switch (categoria) {
       case "Trabajo":
-        return "badge bg-primary";
+        return "badge bg-primary"; // Clase para "Trabajo"
       case "Personal":
-        return "badge bg-success";
+        return "badge bg-success"; // Clase para "Personal"
       case "Urgente":
-        return "badge bg-danger";
+        return "badge bg-danger"; // Clase para "Urgente"
       default:
-        return "badge bg-secondary";
+        return "badge bg-secondary"; // Clase por defecto
     }
   };
 
+  // Función para agregar una nueva tarea
   const agregarTarea = () => {
     if (titulo && descripcion) {
       const nuevaTarea = {
-        id: Date.now(),
-        titulo,
-        descripcion,
-        realizado: false,
-        categoria,
-        vencimiento: fechaVencimiento,
+        id: Date.now(), // Genera un ID único con la fecha actual
+        titulo, // Título de la tarea
+        descripcion, // Descripción de la tarea
+        realizado: false, // Estado de tarea no realizada
+        categoria, // Categoría de la tarea
+        vencimiento: fechaVencimiento, // Fecha de vencimiento
       };
-      setTareas([...tareas, nuevaTarea]);
+      setTareas([...tareas, nuevaTarea]); // Agregamos la nueva tarea a la lista de tareas
+      // Limpiar los campos del formulario después de agregar la tarea
       setTitulo("");
       setDescripcion("");
       setFechaVencimiento("");
@@ -78,37 +87,43 @@ function App() {
     }
   };
 
+  // Función para eliminar una tarea por su ID
   const eliminarTarea = (id) => {
-    setTareas(tareas.filter((tarea) => tarea.id !== id));
+    setTareas(tareas.filter((tarea) => tarea.id !== id)); // Filtramos las tareas y eliminamos la tarea con el ID correspondiente
   };
 
+  // Función para editar una tarea seleccionada por su ID
   const editarTarea = (id) => {
-    const tareaAEditar = tareas.find((tarea) => tarea.id === id);
-    setTitulo(tareaAEditar.titulo);
+    const tareaAEditar = tareas.find((tarea) => tarea.id === id); // Buscamos la tarea por ID
+    setTitulo(tareaAEditar.titulo); // Llenamos el formulario con los datos de la tarea seleccionada
     setDescripcion(tareaAEditar.descripcion);
     setCategoria(tareaAEditar.categoria);
     setFechaVencimiento(tareaAEditar.vencimiento);
-    setTareas(tareas.filter((tarea) => tarea.id !== id));
+    setTareas(tareas.filter((tarea) => tarea.id !== id)); // Eliminamos la tarea editada de la lista
   };
 
+  // Función para marcar una tarea como realizada o pendiente
   const marcarComoRealizado = (id) => {
     setTareas(
-      tareas.map((tarea) =>
-        tarea.id === id ? { ...tarea, realizado: !tarea.realizado } : tarea
+      tareas.map(
+        (tarea) =>
+          tarea.id === id ? { ...tarea, realizado: !tarea.realizado } : tarea // Alternamos el estado de "realizado"
       )
     );
   };
 
+  // Función para filtrar las tareas según el estado (realizadas, pendientes o todas)
   const filtrarTareas = (tarea) => {
     if (filtro === "realizadas") {
-      return tarea.realizado;
+      return tarea.realizado; // Filtramos las tareas realizadas
     } else if (filtro === "pendientes") {
-      return !tarea.realizado;
+      return !tarea.realizado; // Filtramos las tareas pendientes
     }
-    return true; // Mostrar todas las tareas
+    return true; // Mostramos todas las tareas por defecto
   };
 
-  const estaVencida = (vencimiento) => new Date(vencimiento) < new Date();
+  // Función para verificar si una tarea está vencida
+  const estaVencida = (vencimiento) => new Date(vencimiento) < new Date(); // Compara la fecha de vencimiento con la fecha actual
 
   return (
     <div className="container mt-5">
@@ -143,7 +158,7 @@ function App() {
           className="form-control"
           placeholder="Título"
           value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
+          onChange={(e) => setTitulo(e.target.value)} // Actualiza el estado del título
         />
       </div>
       <div className="mb-3">
@@ -152,7 +167,7 @@ function App() {
           className="form-control"
           placeholder="Descripción"
           value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
+          onChange={(e) => setDescripcion(e.target.value)} // Actualiza el estado de la descripción
         />
       </div>
       <div className="mb-3">
@@ -160,14 +175,14 @@ function App() {
           type="date"
           className="form-control"
           value={fechaVencimiento}
-          onChange={(e) => setFechaVencimiento(e.target.value)}
+          onChange={(e) => setFechaVencimiento(e.target.value)} // Actualiza el estado de la fecha de vencimiento
         />
       </div>
       <div className="mb-3">
         <select
           className="form-select"
           value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          onChange={(e) => setCategoria(e.target.value)} // Actualiza el estado de la categoría
         >
           <option value="">Categoría</option>
           <option value="Trabajo">Trabajo</option>
