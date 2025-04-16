@@ -10,7 +10,6 @@ function App() {
   const [tareas, setTareas] = useState([]);
 
   useEffect(() => {
-    // Cargar las tareas desde localStorage
     const tareasGuardadas = JSON.parse(localStorage.getItem("tareas"));
     if (tareasGuardadas) {
       setTareas(tareasGuardadas);
@@ -18,16 +17,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Guardar las tareas en localStorage cada vez que cambien
     localStorage.setItem("tareas", JSON.stringify(tareas));
   }, [tareas]);
 
-  // Filtrar tareas por estado (realizadas, pendientes o todas)
   const filtrarTareas = (tarea) => {
     if (filtro === "realizadas") return tarea.realizado;
     if (filtro === "pendientes") return !tarea.realizado;
     return true;
   };
+
   const obtenerClaseCategoria = (categoria) => {
     switch (categoria) {
       case "Trabajo":
@@ -38,6 +36,19 @@ function App() {
         return "bg-danger text-white";
       default:
         return "bg-light";
+    }
+  };
+
+  const obtenerClaseBadge = (categoria) => {
+    switch (categoria) {
+      case "Trabajo":
+        return "badge bg-primary";
+      case "Personal":
+        return "badge bg-success";
+      case "Urgente":
+        return "badge bg-danger";
+      default:
+        return "badge bg-secondary";
     }
   };
 
@@ -69,7 +80,7 @@ function App() {
     setDescripcion(tareaAEditar.descripcion);
     setCategoria(tareaAEditar.categoria);
     setFechaVencimiento(tareaAEditar.vencimiento);
-    setTareas(tareas.filter((tarea) => tarea.id !== id)); // Eliminar la tarea para re-crearla
+    setTareas(tareas.filter((tarea) => tarea.id !== id));
   };
 
   const marcarComoRealizado = (id) => {
@@ -165,8 +176,15 @@ function App() {
             }`}
           >
             <div className="card-body">
-              <h5 className="card-title">{tarea.titulo}</h5>
-              <p className="card-text">{tarea.descripcion}</p>
+              <div className="d-flex justify-content-between align-items-center">
+                <h5 className="card-title mb-0">{tarea.titulo}</h5>
+                {tarea.categoria && (
+                  <span className={obtenerClaseBadge(tarea.categoria)}>
+                    {tarea.categoria}
+                  </span>
+                )}
+              </div>
+              <p className="card-text mt-2">{tarea.descripcion}</p>
               {tarea.vencimiento && (
                 <p className="card-text">
                   <small className="text-muted">
@@ -174,11 +192,6 @@ function App() {
                   </small>
                 </p>
               )}
-              <p className="card-text">
-                <small className="text-muted">
-                  Categoría: {tarea.categoria}
-                </small>
-              </p>
               <div className="d-flex justify-content-between">
                 <button
                   className="btn btn-sm btn-warning"
