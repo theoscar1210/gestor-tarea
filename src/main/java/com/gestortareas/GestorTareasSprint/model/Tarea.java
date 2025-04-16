@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.util.Date;
 
 // Anotación que marca esta clase como una entidad JPA (Java Persistence API),
 // lo que significa que esta clase será mapeada a una tabla en la base de datos.
@@ -19,7 +20,10 @@ public class Tarea {
     // Atributos de la clase Tarea
     private String titulo; // Título de la tarea
     private String descripcion; // Descripción de la tarea
-
+    private Date vencimiento; // Fecha de vencimiento de la tarea
+    private String categoria; // Categoría de la tarea
+    
+    private boolean realizado; // Estado de la tarea (realizada o no)
     // Método getter para obtener el valor de 'id'
     public Long getId() {
         return id;
@@ -49,4 +53,31 @@ public class Tarea {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
+    //Metodo setter para establecer el vencimiento
+    public Date getVencimiento() {
+        return vencimiento;
+    }
+    // Método setter para establecer la fecha de vencimiento de la tarea
+    // Este método recibe un objeto Date que representa la nueva fecha de vencimiento.
+    public void setVencimiento(Date vencimiento) {
+        this.vencimiento = vencimiento;
+    }
+    // Método getter para obtener el valor de 'categoria'
+    public String getCategoria() {
+        return categoria;
+    }
+// Método setter para establecer la categoría de la tarea
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+// Método getter para obtener el valor de 'realizado'
+    // Este método devuelve un valor booleano que indica si la tarea ha sido realizada o no.
+    public boolean isRealizado() {
+        return realizado;
+    }
+// Método setter para establecer el estado de 'realizado'
+    public void setRealizado(boolean realizado) {
+        this.realizado = realizado;
+    }
+}
 }
