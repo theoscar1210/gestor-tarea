@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import "./App.css";
 import Swal from "sweetalert2";
 import { obtenerTareas, agregarTarea, eliminarTarea, editarTarea } from "./api";
 
@@ -10,6 +11,7 @@ function App() {
   const [descripcion, setDescripcion] = useState("");
   const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [prioridad, setPrioridad] = useState("");
 
   useEffect(() => {
     obtenerTareas()
@@ -29,6 +31,7 @@ function App() {
         realizado: false,
         categoria,
         vencimiento: fechaVencimiento,
+        prioridad, // Se agrega la prioridad aquí
       };
 
       agregarTarea(nuevaTarea)
@@ -38,6 +41,7 @@ function App() {
           setDescripcion("");
           setFechaVencimiento("");
           setCategoria("");
+          setPrioridad("");
           Swal.fire({
             icon: "success",
             title: "Tarea agregada con éxito",
@@ -104,6 +108,35 @@ function App() {
       });
   };
 
+  // Función para obtener la clase de prioridad
+  const obtenerClasePrioridad = (prioridad) => {
+    switch (prioridad) {
+      case "alta":
+        return "bg-prioridad-alta"; //prioridad-alta
+      case "media":
+        return "bg-prioridad-media"; //prioridad-media
+      case "baja":
+        return "bg-prioridad-baja"; //prioridad-baja
+      default:
+        return "bg-secondary"; // Sin prioridad
+    }
+  };
+
+  const obtenerClaseCategoria = (categoria) => {
+    switch (categoria?.toLowerCase()) {
+      case "personal":
+        return "border-info"; // Azul
+      case "trabajo":
+        return "border-primary"; // Azul más oscuro
+      case "urgente":
+        return "border-danger"; // Rojo
+      case "estudio":
+        return "border-warning"; // Amarillo
+      default:
+        return "border-secondary"; // Gris
+    }
+  };
+
   return (
     <div className="container mt-5">
       <h1 className="text-center mb-4 text-primary">
@@ -125,13 +158,16 @@ function App() {
               />
             </div>
             <div className="col-md-6">
-              <input
-                type="text"
+              <select
                 className="form-control"
-                placeholder="Categoría"
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-              />
+                value={prioridad}
+                onChange={(e) => setPrioridad(e.target.value)}
+              >
+                <option value="">Prioridad</option>
+                <option value="alta">Alta</option>
+                <option value="media">Media</option>
+                <option value="baja">Baja</option>
+              </select>
             </div>
             <div className="col-md-12">
               <textarea
@@ -150,6 +186,19 @@ function App() {
                 onChange={(e) => setFechaVencimiento(e.target.value)}
               />
             </div>
+            <div className="col-md-6">
+              <select
+                className="form-control"
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+              >
+                <option value="">Seleccione categoría</option>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Personal">Personal</option>
+                <option value="Estudio">Estudio</option>
+              </select>
+            </div>
+
             <div className="col-md-6 d-grid">
               <button className="btn btn-success" onClick={agregarTareaHandler}>
                 <i className="bi bi-plus-circle me-1"></i> Agregar Tarea
@@ -163,22 +212,38 @@ function App() {
       <div className="row">
         {tareas.map((tarea) => (
           <div className="col-md-6 col-lg-4 mb-4" key={tarea.id}>
+            {/* Card de la tarea con clases dinámicas: prioridad, categoría y estado */}
             <div
-              className={`card shadow-sm h-100 border-${
-                tarea.realizado ? "success" : "secondary"
-              }`}
+              className={`card shadow-sm h-100 
+          border-${tarea.realizado ? "success" : "secondary"} 
+          ${obtenerClasePrioridad(tarea.prioridad)} 
+          ${obtenerClaseCategoria(tarea.categoria)}`}
             >
               <div className="card-body d-flex flex-column">
+                {/* Título truncado si es muy largo */}
                 <h5 className="card-title text-truncate">{tarea.titulo}</h5>
+
+                {/* Categoría como badge de color dinámico */}
                 <h6 className="card-subtitle mb-2 text-muted">
-                  <i className="bi bi-tag-fill me-1"></i>
-                  {tarea.categoria || "Sin categoría"}
+                  <span
+                    className={`badge ${obtenerClaseCategoria(
+                      tarea.categoria
+                    )}`}
+                  >
+                    {tarea.categoria || "Sin categoría"}
+                  </span>
                 </h6>
+
+                {/* Descripción */}
                 <p className="card-text">{tarea.descripcion}</p>
+
+                {/* Fecha de vencimiento */}
                 <p className="mb-1">
                   <i className="bi bi-calendar-event me-1"></i>
                   <strong>Vence:</strong> {tarea.vencimiento || "Sin fecha"}
                 </p>
+
+                {/* Estado de la tarea */}
                 <p>
                   <strong>Estado:</strong>{" "}
                   <span
@@ -189,6 +254,8 @@ function App() {
                     {tarea.realizado ? "Realizada" : "Pendiente"}
                   </span>
                 </p>
+
+                {/* Botones de acción */}
                 <div className="mt-auto d-flex justify-content-between">
                   <button
                     className={`btn btn-sm ${
@@ -218,6 +285,7 @@ function App() {
             </div>
           </div>
         ))}
+
         {tareas.length === 0 && (
           <p className="text-center text-muted">No hay tareas registradas.</p>
         )}

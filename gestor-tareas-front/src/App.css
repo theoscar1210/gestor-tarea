@@ -1,31 +1,66 @@
-/* App.css */
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f7f7f7;
+.card {
+  background-color: #a9c7df; /* Fondo blanco para las tarjetas */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
 }
 
-.form-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+.card.urgente {
+  background-color: #ee8037; /* Color pastel rojo para urgente */
 }
 
-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
+.card.pendiente {
+  background-color: #b5e6b9; /* Color pastel verde para pendiente */
+}
+
+.card.realizada {
+  background-color: #e0f190; /* Color pastel verde claro para tareas realizadas */
+}
+.btn {
+  border-radius: 20px; /* Bordes redondeados */
   padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #45a049;
+.btn-primary {
+  background-color: #4caf50; /* Verde suave */
+  border-color: #4caf50;
+}
+
+.btn-danger {
+  background-color: #ff6347; /* Rojo suave */
+  border-color: #ff6347;
+}
+
+.btn-warning {
+  background-color: #c74d28; /* Amarillo suave */
+  border-color: #ffd700;
+}
+.bg-prioridad-alta {
+  background-color: #d39b33 !important; /* rojo claro */
+}
+
+.bg-prioridad-media {
+  background-color: #fff3cd !important; /* amarillo claro */
+}
+
+.bg-prioridad-baja {
+  background-color: #a1c4a9 !important; /* verde claro */
+}
+/* Categorías como bordes */
+.border-info {
+  border-left: 5px solid #0dcaf0 !important;
+}
+
+.border-primary {
+  border-left: 5px solid #0d6efd !important;
+}
+
+.border-danger {
+  border-left: 5px solid #dc3545 !important;
+}
+
+.border-warning {
+  border-left: 5px solid #ffc107 !important;
+}
+
+.border-secondary {
+  border-left: 5px solid #6c757d !important;
 }
