@@ -78,6 +78,5 @@ public class Tarea {
 // Método setter para establecer el estado de 'realizado'
     public void setRealizado(boolean realizado) {
         this.realizado = realizado;
-    }
 }
 }
