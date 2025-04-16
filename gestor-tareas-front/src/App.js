@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import {
+  obtenerTareas,
+  agregarTarea,
+  eliminarTarea,
+  editarTarea,
+  marcarComoRealizado,
+} from "./api"; // Importamos las funciones de API
+
 function App() {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -8,23 +16,23 @@ function App() {
   const [categoria, setCategoria] = useState("");
   const [filtro, setFiltro] = useState("todas");
   const [tareas, setTareas] = useState([]);
-
+  // Cargar tareas desde el backend
   useEffect(() => {
     const tareasGuardadas = JSON.parse(localStorage.getItem("tareas"));
     if (tareasGuardadas) {
       setTareas(tareasGuardadas);
     }
   }, []);
-
+  //cargar tareas desde el backend
   useEffect(() => {
-    localStorage.setItem("tareas", JSON.stringify(tareas));
-  }, [tareas]);
-
-  const filtrarTareas = (tarea) => {
-    if (filtro === "realizadas") return tarea.realizado;
-    if (filtro === "pendientes") return !tarea.realizado;
-    return true;
-  };
+    obtenerTareas()
+      .then((response) => {
+        setTareas(response.data);
+      })
+      .catch((error) => {
+        console.error("Hubo un error al obtener las tareas:", error);
+      });
+  }, []);
 
   const obtenerClaseCategoria = (categoria) => {
     switch (categoria) {
@@ -89,6 +97,15 @@ function App() {
         tarea.id === id ? { ...tarea, realizado: !tarea.realizado } : tarea
       )
     );
+  };
+
+  const filtrarTareas = (tarea) => {
+    if (filtro === "realizadas") {
+      return tarea.realizado;
+    } else if (filtro === "pendientes") {
+      return !tarea.realizado;
+    }
+    return true; // Mostrar todas las tareas
   };
 
   const estaVencida = (vencimiento) => new Date(vencimiento) < new Date();
