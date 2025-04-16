@@ -1,36 +1,49 @@
 package com.gestortareas.GestorTareasSprint.controller;
 
 
-
-// Adjust the import to the correct package or ensure the Tarea class exists in the specified package
 import com.gestortareas.GestorTareasSprint.model.Tarea;
-import com.gestortareas.GestorTareasSprint.service.TareaService;
-import org.springframework.web.bind.annotation.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import com.gestortareas.GestorTareasSprint.repository.TareaRepository;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tareas")
 public class TareaController {
 
-    private final TareaService tareaService;
+    @Autowired
+    private TareaRepository tareaRepository;
 
-    public TareaController(TareaService tareaService) {
-        this.tareaService = tareaService;
-    }
-
-    @PostMapping
-    public Tarea crearTarea(@RequestBody Tarea tarea) {
-        return tareaService.crearTarea(tarea);
-    }
-
+    // Obtener todas las tareas
     @GetMapping
-    public List<Tarea> listarTareas() {
-        return tareaService.listarTareas();
+    public List<Tarea> obtenerTareas() {
+        return tareaRepository.findAll();
     }
 
+    // Crear una nueva tarea
+    @PostMapping
+    public Tarea agregarTarea(@RequestBody Tarea tarea) {
+        return tareaRepository.save(tarea);
+    }
+
+    // Obtener una tarea por ID
+    @GetMapping("/{id}")
+    public Optional<Tarea> obtenerTarea(@PathVariable Long id) {
+        return tareaRepository.findById(id);
+    }
+
+    // Editar una tarea existente
+    @PutMapping("/{id}")
+    public Tarea editarTarea(@PathVariable Long id, @RequestBody Tarea tarea) {
+        tarea.setId(id);
+        return tareaRepository.save(tarea);
+    }
+
+    // Eliminar una tarea
     @DeleteMapping("/{id}")
     public void eliminarTarea(@PathVariable Long id) {
-        tareaService.eliminarTarea(id);
+        tareaRepository.deleteById(id);
     }
 }
