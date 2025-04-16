@@ -1,16 +1,16 @@
 package com.gestortareas.GestorTareasSprint.controller;
 
-
 import com.gestortareas.GestorTareasSprint.model.Tarea;
-
+import com.gestortareas.GestorTareasSprint.repository.TareaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.gestortareas.GestorTareasSprint.repository.TareaRepository;
+
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tareas")
+@CrossOrigin(origins = "http://localhost:3000") // Permite solicitudes desde el frontend (cambia si usas otro puerto o dominio)
 public class TareaController {
 
     @Autowired
