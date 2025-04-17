@@ -26,3 +26,12 @@ export const editarTarea = (id, tarea) => {
 export const eliminarTarea = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
+// Notificaciones (ajusta IP si estás local o en servidor)
+export const obtenerNotificaciones = () =>
+  axios.get("http://localhost:8080/api/notificaciones");
+
+export const agregarNotificacion = (mensaje, tipo) =>
+  axios.post("http://localhost:8080/api/notificaciones", {
+    mensaje,
+    tipo,
+  });
