@@ -1,7 +1,7 @@
-// src/main/java/com/tuapp/model/Notificacion.java
 package com.gestortareas.GestorTareasSprint.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +18,35 @@ public class Notificacion {
 
     private LocalDateTime fecha = LocalDateTime.now();
 
-    // Getters y Setters
-    // (puedes usar Lombok si quieres simplificar)
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMensaje() {
+        return mensaje;
+    }
+
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
+    }
 }

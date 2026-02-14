@@ -1,5 +1,10 @@
-/* index.css */
 body {
-  background-color: #92cae4; /* Cambiar el color de fondo */
-  color: #333; /* Color de texto */
+  margin: 0;
+  background: #eaf2ff;
+  color: #0f172a;
+  font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
