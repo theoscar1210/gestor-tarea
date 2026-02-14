@@ -1,12 +1,7 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "./App.css";
-
-import Tareas from "./pages/Tareas";
+import AppView from "./app/App";
 
 function App() {
-  return <Tareas />;
+  return <AppView />;
 }
 
 export default App;
