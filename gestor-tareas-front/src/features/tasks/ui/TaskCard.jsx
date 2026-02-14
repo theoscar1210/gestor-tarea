@@ -13,7 +13,7 @@ const TaskCard = ({ tarea, marcarComoRealizada, eliminarTareaHandler }) => {
         className={`card shadow-sm h-100 border-${
           tarea.realizado ? "success" : "secondary"
         } ${obtenerClasePrioridad(tarea.prioridad)} ${obtenerClaseCategoria(
-          tarea.categoria
+          tarea.categoria,
         )}`}
       >
         <div className="card-body d-flex flex-column">

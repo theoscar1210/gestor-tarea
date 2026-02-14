@@ -1,4 +1,9 @@
-const TaskForm = ({ taskForm, updateFormValue, agregarTareaHandler, isSubmitting }) => {
+const TaskForm = ({
+  taskForm,
+  updateFormValue,
+  agregarTareaHandler,
+  isSubmitting,
+}) => {
   return (
     <div className="card mb-4 shadow-sm border-0">
       <div className="card-body">
@@ -38,7 +43,9 @@ const TaskForm = ({ taskForm, updateFormValue, agregarTareaHandler, isSubmitting
               value={taskForm.descripcion}
               onChange={(e) => updateFormValue("descripcion", e.target.value)}
             />
-            <small className="text-muted">{taskForm.descripcion.length}/600</small>
+            <small className="text-muted">
+              {taskForm.descripcion.length}/600
+            </small>
           </div>
 
           <div className="col-md-6">

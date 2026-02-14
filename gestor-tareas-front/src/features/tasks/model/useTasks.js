@@ -54,7 +54,7 @@ export const useTasks = () => {
 
   const tareasFiltradas = useMemo(
     () => tareas.filter((tarea) => matchesFilter(tarea, search, statusFilter)),
-    [tareas, search, statusFilter]
+    [tareas, search, statusFilter],
   );
 
   const stats = useMemo(() => {
@@ -91,7 +91,11 @@ export const useTasks = () => {
 
   const agregarTareaHandler = useCallback(async () => {
     if (!taskForm.titulo || !taskForm.descripcion) {
-      Swal.fire("Campos requeridos", "Título y descripción son obligatorios", "warning");
+      Swal.fire(
+        "Campos requeridos",
+        "Título y descripción son obligatorios",
+        "warning",
+      );
       return;
     }
 
@@ -152,7 +156,7 @@ export const useTasks = () => {
         Swal.fire("Error", apiError.message, "error");
       }
     },
-    [tareas]
+    [tareas],
   );
 
   return {
