@@ -16,6 +16,30 @@ const initialForm = {
   prioridad: "",
 };
 
+const buildTaskPayload = (taskForm) => ({
+  titulo: taskForm.titulo,
+  descripcion: taskForm.descripcion,
+  realizado: false,
+  categoria: taskForm.categoria,
+  vencimiento: taskForm.vencimiento || null,
+  prioridad: taskForm.prioridad,
+});
+
+const matchesFilter = (tarea, search, statusFilter) => {
+  const normalizedSearch = search.toLowerCase();
+  const matchSearch =
+    !search ||
+    tarea.titulo?.toLowerCase().includes(normalizedSearch) ||
+    tarea.descripcion?.toLowerCase().includes(normalizedSearch);
+
+  const matchStatus =
+    statusFilter === "all" ||
+    (statusFilter === "done" && tarea.realizado) ||
+    (statusFilter === "pending" && !tarea.realizado);
+
+  return matchSearch && matchStatus;
+};
+
 export const useTasks = () => {
   const [tareas, setTareas] = useState([]);
   const [taskForm, setTaskForm] = useState(initialForm);
@@ -28,27 +52,19 @@ export const useTasks = () => {
 
   const notificaciones = useMemo(() => getDueNotifications(tareas), [tareas]);
 
-  const tareasFiltradas = useMemo(() => {
-    return tareas.filter((tarea) => {
-      const matchSearch =
-        !search ||
-        tarea.titulo?.toLowerCase().includes(search.toLowerCase()) ||
-        tarea.descripcion?.toLowerCase().includes(search.toLowerCase());
-
-      const matchStatus =
-        statusFilter === "all" ||
-        (statusFilter === "done" && tarea.realizado) ||
-        (statusFilter === "pending" && !tarea.realizado);
-
-      return matchSearch && matchStatus;
-    });
-  }, [tareas, search, statusFilter]);
+  const tareasFiltradas = useMemo(
+    () => tareas.filter((tarea) => matchesFilter(tarea, search, statusFilter)),
+    [tareas, search, statusFilter]
+  );
 
   const stats = useMemo(() => {
     const total = tareas.length;
     const realizadas = tareas.filter((item) => item.realizado).length;
-    const pendientes = total - realizadas;
-    return { total, realizadas, pendientes };
+    return {
+      total,
+      realizadas,
+      pendientes: total - realizadas,
+    };
   }, [tareas]);
 
   const loadTasks = useCallback(async () => {
@@ -79,18 +95,9 @@ export const useTasks = () => {
       return;
     }
 
-    const nuevaTarea = {
-      titulo: taskForm.titulo,
-      descripcion: taskForm.descripcion,
-      realizado: false,
-      categoria: taskForm.categoria,
-      vencimiento: taskForm.vencimiento || null,
-      prioridad: taskForm.prioridad,
-    };
-
     try {
       setIsSubmitting(true);
-      const creada = await agregarTarea(nuevaTarea);
+      const creada = await agregarTarea(buildTaskPayload(taskForm));
       setTareas((prev) => [...prev, creada]);
       setTaskForm(initialForm);
       Swal.fire({
@@ -129,22 +136,24 @@ export const useTasks = () => {
     }
   }, []);
 
-  const marcarComoRealizada = useCallback(async (id, realizadoActual) => {
-    const tarea = tareas.find((item) => item.id === id);
+  const marcarComoRealizada = useCallback(
+    async (id, realizadoActual) => {
+      const tarea = tareas.find((item) => item.id === id);
+      if (!tarea) {
+        return;
+      }
 
-    if (!tarea) {
-      return;
-    }
+      const tareaActualizada = { ...tarea, realizado: !realizadoActual };
 
-    const tareaActualizada = { ...tarea, realizado: !realizadoActual };
-
-    try {
-      const actualizada = await editarTarea(id, tareaActualizada);
-      setTareas((prev) => prev.map((t) => (t.id === id ? actualizada : t)));
-    } catch (apiError) {
-      Swal.fire("Error", apiError.message, "error");
-    }
-  }, [tareas]);
+      try {
+        const actualizada = await editarTarea(id, tareaActualizada);
+        setTareas((prev) => prev.map((t) => (t.id === id ? actualizada : t)));
+      } catch (apiError) {
+        Swal.fire("Error", apiError.message, "error");
+      }
+    },
+    [tareas]
+  );
 
   return {
     taskForm,

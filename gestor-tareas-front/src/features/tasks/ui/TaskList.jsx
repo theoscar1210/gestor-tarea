@@ -1,13 +1,23 @@
 import TaskCard from "./TaskCard";
 
-const TaskList = ({ tareas, marcarComoRealizada, eliminarTareaHandler, isLoading, error, onRetry }) => {
+const TaskList = ({
+  tareas,
+  marcarComoRealizada,
+  eliminarTareaHandler,
+  isLoading,
+  error,
+  onRetry,
+}) => {
   if (isLoading) {
     return <p className="text-center text-muted py-4">Cargando tareas...</p>;
   }
 
   if (error) {
     return (
-      <div className="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+      <div
+        className="alert alert-danger d-flex justify-content-between align-items-center"
+        role="alert"
+      >
         <span>{error.message}</span>
         <button className="btn btn-sm btn-outline-danger" onClick={onRetry}>
           Reintentar
@@ -17,7 +27,11 @@ const TaskList = ({ tareas, marcarComoRealizada, eliminarTareaHandler, isLoading
   }
 
   if (tareas.length === 0) {
-    return <p className="text-center text-muted py-4">No hay tareas para mostrar con los filtros actuales.</p>;
+    return (
+      <p className="text-center text-muted py-4">
+        No hay tareas para mostrar con los filtros actuales.
+      </p>
+    );
   }
 
   return (

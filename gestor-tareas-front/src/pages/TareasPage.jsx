@@ -37,7 +37,9 @@ const TareasPage = () => {
         <h1 className="hero__title">
           <i className="bi bi-check2-square me-2"></i>Gestor de Tareas
         </h1>
-        <p className="hero__subtitle">Organiza, prioriza y completa tus tareas con enfoque.</p>
+        <p className="hero__subtitle">
+          Organiza, prioriza y completa tus tareas con enfoque.
+        </p>
       </header>
 
       <section className="stats-grid mb-4">

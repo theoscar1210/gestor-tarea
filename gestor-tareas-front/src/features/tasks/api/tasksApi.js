@@ -6,41 +6,26 @@ const api = axios.create({
   timeout: 10000,
 });
 
-const handleError = (error) => {
-  throw normalizeApiError(error);
-};
-
-export const obtenerTareas = async () => {
+const safeRequest = async (request) => {
   try {
-    const response = await api.get("");
+    const response = await request();
     return response.data;
   } catch (error) {
-    handleError(error);
+    throw normalizeApiError(error);
   }
 };
 
-export const agregarTarea = async (tarea) => {
-  try {
-    const response = await api.post("", tarea);
-    return response.data;
-  } catch (error) {
-    handleError(error);
-  }
-};
+export const obtenerTareas = () => safeRequest(() => api.get(""));
 
-export const editarTarea = async (id, tarea) => {
-  try {
-    const response = await api.put(`/${id}`, tarea);
-    return response.data;
-  } catch (error) {
-    handleError(error);
-  }
-};
+export const agregarTarea = (tarea) => safeRequest(() => api.post("", tarea));
+
+export const editarTarea = (id, tarea) =>
+  safeRequest(() => api.put(`/${id}`, tarea));
 
 export const eliminarTarea = async (id) => {
   try {
     await api.delete(`/${id}`);
   } catch (error) {
-    handleError(error);
+    throw normalizeApiError(error);
   }
 };
