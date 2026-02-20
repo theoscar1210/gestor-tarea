@@ -16,30 +16,61 @@ const TareasPage = () => {
     setMostrarNotificaciones,
   } = useTasks();
 
+  const totalTareas = tareas.length;
+  const tareasRealizadas = tareas.filter((t) => t.realizado).length;
+  const tareasPendientes = totalTareas - tareasRealizadas;
+
   return (
-    <div className="container mt-4">
-      <NotificationHeader
-        notificaciones={notificaciones}
-        mostrarNotificaciones={mostrarNotificaciones}
-        setMostrarNotificaciones={setMostrarNotificaciones}
-      />
+    <>
+      {/* Header */}
+      <header className="app-header">
+        <div className="app-header__brand">
+          <i className="bi bi-check2-square"></i>
+          Gestor de Tareas
+        </div>
+        <NotificationHeader
+          notificaciones={notificaciones}
+          mostrarNotificaciones={mostrarNotificaciones}
+          setMostrarNotificaciones={setMostrarNotificaciones}
+        />
+      </header>
 
-      <h1 className="text-center mb-4 text-primary">
-        <i className="bi bi-check2-square me-2"></i>Gestor de Tareas
-      </h1>
+      {/* Contenido principal */}
+      <main className="app-content">
+        {/* Estadísticas rápidas */}
+        <div className="stats-bar">
+          <div className="stat-chip stat-chip--total">
+            <i className="bi bi-list-task"></i>
+            {totalTareas} {totalTareas === 1 ? "tarea" : "tareas"}
+          </div>
+          <div className="stat-chip stat-chip--done">
+            <i className="bi bi-check2-circle"></i>
+            {tareasRealizadas} completadas
+          </div>
+          <div className="stat-chip stat-chip--pending">
+            <i className="bi bi-clock"></i>
+            {tareasPendientes} pendientes
+          </div>
+        </div>
 
-      <TaskForm
-        taskForm={taskForm}
-        updateFormValue={updateFormValue}
-        agregarTareaHandler={agregarTareaHandler}
-      />
+        {/* Formulario */}
+        <TaskForm
+          taskForm={taskForm}
+          updateFormValue={updateFormValue}
+          agregarTareaHandler={agregarTareaHandler}
+        />
 
-      <TaskList
-        tareas={tareas}
-        marcarComoRealizada={marcarComoRealizada}
-        eliminarTareaHandler={eliminarTareaHandler}
-      />
-    </div>
+        {/* Lista de tareas */}
+        <p className="section-title">
+          <i className="bi bi-layout-three-columns me-1"></i>Mis Tareas
+        </p>
+        <TaskList
+          tareas={tareas}
+          marcarComoRealizada={marcarComoRealizada}
+          eliminarTareaHandler={eliminarTareaHandler}
+        />
+      </main>
+    </>
   );
 };
 

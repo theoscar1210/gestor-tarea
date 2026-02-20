@@ -6,25 +6,39 @@ const NotificationHeader = ({
   setMostrarNotificaciones,
 }) => {
   return (
-    <div className="d-flex justify-content-end mb-3 position-relative">
+    <div style={{ position: "relative" }}>
       <button
-        className="btn btn-outline-primary position-relative"
+        className="notif-btn"
         onClick={() => setMostrarNotificaciones(!mostrarNotificaciones)}
+        title="Notificaciones"
       >
         <i className="bi bi-bell"></i>
         {notificaciones.length > 0 && (
-          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            {notificaciones.length}
-          </span>
+          <span className="notif-badge">{notificaciones.length}</span>
         )}
       </button>
 
       {mostrarNotificaciones && (
-        <div
-          className="position-absolute end-0 mt-5 p-3 bg-white border rounded shadow"
-          style={{ zIndex: 1000, width: "300px" }}
-        >
-          <h6>Notificaciones</h6>
+        <div className="notif-dropdown">
+          <div className="notif-dropdown__header">
+            <i className="bi bi-bell-fill" style={{ color: "#f59e0b" }}></i>
+            Notificaciones
+            {notificaciones.length > 0 && (
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: "0.7rem",
+                  background: "#fee2e2",
+                  color: "#dc2626",
+                  borderRadius: "10px",
+                  padding: "0.15em 0.6em",
+                  fontWeight: 600,
+                }}
+              >
+                {notificaciones.length}
+              </span>
+            )}
+          </div>
           <NotificationList notificaciones={notificaciones} />
         </div>
       )}

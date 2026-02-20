@@ -1,53 +1,96 @@
-import {
-  obtenerClaseCategoria,
-  obtenerClasePrioridad,
-} from "../../../shared/lib/taskStyles";
+const getCategoryAccent = (categoria) => {
+  switch (categoria?.toLowerCase()) {
+    case "trabajo":   return "accent-trabajo";
+    case "personal":  return "accent-personal";
+    case "estudio":   return "accent-estudio";
+    default:          return "accent-default";
+  }
+};
+
+const getCategoryBadge = (categoria) => {
+  switch (categoria?.toLowerCase()) {
+    case "trabajo":   return "badge-categoria badge-trabajo";
+    case "personal":  return "badge-categoria badge-personal";
+    case "estudio":   return "badge-categoria badge-estudio";
+    default:          return "badge-categoria badge-default";
+  }
+};
+
+const getPriorityBadge = (prioridad) => {
+  switch (prioridad?.toLowerCase()) {
+    case "alta":  return "badge-priority badge-alta";
+    case "media": return "badge-priority badge-media";
+    case "baja":  return "badge-priority badge-baja";
+    default:      return "badge-priority badge-sin";
+  }
+};
+
+const isOverdue = (vencimiento) => {
+  if (!vencimiento) return false;
+  return new Date(vencimiento) < new Date();
+};
 
 const TaskCard = ({ tarea, marcarComoRealizada, eliminarTareaHandler }) => {
+  const overdue = !tarea.realizado && isOverdue(tarea.vencimiento);
+
   return (
     <div className="col-md-6 col-lg-4 mb-4">
-      <div
-        className={`card shadow-sm h-100 border-${
-          tarea.realizado ? "success" : "secondary"
-        } ${obtenerClasePrioridad(tarea.prioridad)} ${obtenerClaseCategoria(
-          tarea.categoria
-        )}`}
-      >
-        <div className="card-body d-flex flex-column">
-          <h5 className="card-title text-truncate">{tarea.titulo}</h5>
-          <h6 className="card-subtitle mb-2 text-muted">
-            <span className={`badge ${obtenerClaseCategoria(tarea.categoria)}`}>
+      <div className={`task-card ${tarea.realizado ? "task-done" : ""}`}>
+
+        {/* Barra de color por categoría */}
+        <div className={`task-card__accent ${getCategoryAccent(tarea.categoria)}`}></div>
+
+        <div className="task-card__body">
+          {/* Título */}
+          <div className="task-card__header">
+            <span className="task-card__title">{tarea.titulo}</span>
+          </div>
+
+          {/* Descripción */}
+          {tarea.descripcion && (
+            <p className="task-card__desc">{tarea.descripcion}</p>
+          )}
+
+          {/* Meta: categoría, prioridad, estado */}
+          <div className="task-card__meta">
+            <span className={getCategoryBadge(tarea.categoria)}>
               {tarea.categoria || "Sin categoría"}
             </span>
-          </h6>
-          <p className="card-text">{tarea.descripcion}</p>
-          <p className="mb-1">
-            <i className="bi bi-calendar-event me-1"></i>
-            <strong>Vence:</strong> {tarea.vencimiento || "Sin fecha"}
-          </p>
-          <p>
-            <strong>Estado:</strong>{" "}
-            <span className={`badge ${tarea.realizado ? "bg-success" : "bg-danger"}`}>
-              {tarea.realizado ? "Realizada" : "Pendiente"}
+            {tarea.prioridad && (
+              <span className={getPriorityBadge(tarea.prioridad)}>
+                {tarea.prioridad}
+              </span>
+            )}
+            <span className={tarea.realizado ? "badge-priority badge-status-done" : "badge-priority badge-status-pending"}>
+              {tarea.realizado ? "✓ Completada" : "Pendiente"}
             </span>
-          </p>
-          <div className="mt-auto d-flex justify-content-between">
+          </div>
+
+          {/* Fecha */}
+          <div className={`task-date ${overdue ? "overdue" : ""}`}>
+            <i className={`bi ${overdue ? "bi-exclamation-circle" : "bi-calendar-event"}`}></i>
+            {tarea.vencimiento
+              ? overdue
+                ? `Venció: ${tarea.vencimiento}`
+                : `Vence: ${tarea.vencimiento}`
+              : "Sin fecha de vencimiento"}
+          </div>
+
+          {/* Acciones */}
+          <div className="task-card__actions" style={{ marginTop: "1rem" }}>
             <button
-              className={`btn btn-sm ${tarea.realizado ? "btn-warning" : "btn-success"}`}
+              className={`btn ${tarea.realizado ? "btn-warning" : "btn-success"}`}
               onClick={() => marcarComoRealizada(tarea.id, tarea.realizado)}
             >
-              <i
-                className={`bi ${
-                  tarea.realizado ? "bi-arrow-counterclockwise" : "bi-check2-circle"
-                } me-1`}
-              ></i>
-              {tarea.realizado ? "Desmarcar" : "Marcar"}
+              <i className={`bi ${tarea.realizado ? "bi-arrow-counterclockwise" : "bi-check2-circle"}`}></i>
+              {tarea.realizado ? "Desmarcar" : "Completar"}
             </button>
             <button
-              className="btn btn-sm btn-danger"
+              className="btn btn-danger"
               onClick={() => eliminarTareaHandler(tarea.id)}
             >
-              <i className="bi bi-trash me-1"></i> Eliminar
+              <i className="bi bi-trash"></i>
+              Eliminar
             </button>
           </div>
         </div>
