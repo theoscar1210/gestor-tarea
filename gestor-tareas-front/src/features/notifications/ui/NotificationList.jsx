@@ -1,17 +1,30 @@
 const NotificationList = ({ notificaciones }) => {
+  if (notificaciones.length === 0) {
+    return (
+      <div className="notif-empty">
+        <i className="bi bi-bell-slash" style={{ fontSize: "1.8rem", display: "block", marginBottom: "0.5rem", color: "#d1d5db" }}></i>
+        Sin notificaciones pendientes
+      </div>
+    );
+  }
+
   return (
-    <ul className="list-group">
-      {notificaciones.length === 0 ? (
-        <li className="list-group-item">Sin notificaciones</li>
-      ) : (
-        notificaciones.map((n, i) => (
-          <li key={`${n.mensaje}-${i}`} className="list-group-item list-group-item-light">
+    <div style={{ maxHeight: "280px", overflowY: "auto" }}>
+      {notificaciones.map((n, i) => (
+        <div key={`${n.mensaje}-${i}`} className="notif-item">
+          <div className="notif-item__msg">
+            <i className="bi bi-alarm me-1" style={{ color: "#f59e0b" }}></i>
             {n.mensaje}
-            <small className="d-block text-muted">{n.fecha}</small>
-          </li>
-        ))
-      )}
-    </ul>
+          </div>
+          {n.fecha && (
+            <div className="notif-item__date">
+              <i className="bi bi-calendar2 me-1"></i>
+              {n.fecha}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
 
