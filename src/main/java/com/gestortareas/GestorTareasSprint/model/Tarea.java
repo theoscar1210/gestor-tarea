@@ -22,7 +22,7 @@ public class Tarea {
     private String descripcion; // Descripción de la tarea
     private Date vencimiento; // Fecha de vencimiento de la tarea
     private String categoria; // Categoría de la tarea
-    
+    private String prioridad; // Prioridad de la tarea (alta, media, baja)
     private boolean realizado; // Estado de la tarea (realizada o no)
     // Método getter para obtener el valor de 'id'
     public Long getId() {
@@ -69,6 +69,14 @@ public class Tarea {
 // Método setter para establecer la categoría de la tarea
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+// Método getter para obtener la prioridad de la tarea
+    public String getPrioridad() {
+        return prioridad;
+    }
+// Método setter para establecer la prioridad de la tarea
+    public void setPrioridad(String prioridad) {
+        this.prioridad = prioridad;
     }
 // Método getter para obtener el valor de 'realizado'
     // Este método devuelve un valor booleano que indica si la tarea ha sido realizada o no.

@@ -1,3 +1,4 @@
+import AgentBubble from "../features/agent/ui/AgentBubble";
 import NotificationHeader from "../features/notifications/ui/NotificationHeader";
 import { useTasks } from "../features/tasks/model/useTasks";
 import TaskForm from "../features/tasks/ui/TaskForm";
@@ -70,6 +71,9 @@ const TareasPage = () => {
           eliminarTareaHandler={eliminarTareaHandler}
         />
       </main>
+
+      {/* Agente Aria — botón flotante */}
+      <AgentBubble notificaciones={notificaciones} />
     </>
   );
 };

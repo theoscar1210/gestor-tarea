@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "groq.api.key",
+      "type": "java.lang.String",
+      "description": "API Key de Groq para el agente Aria (gratuita). Obtén la tuya en https://console.groq.com → API Keys."
+    }
+  ]
+}
