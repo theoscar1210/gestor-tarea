@@ -3,10 +3,18 @@ import { NavLink } from "react-router-dom";
 const Navbar = ({ onLogout }) => {
   return (
     <nav className="app-navbar">
-      <div className="app-navbar__brand">
-        <i className="bi bi-check2-square"></i>
-        <span>Gestor de Tareas</span>
-      </div>
+      {/* Logo */}
+      <NavLink to="/" className="app-navbar__brand" style={{ textDecoration: "none" }}>
+        <img
+          src="/fintask.png"
+          alt="FIN TASK"
+          style={{ height: "46px", width: "auto", objectFit: "contain" }}
+        />
+        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.05rem", letterSpacing: "0.08em", lineHeight: 1 }}>
+          <span style={{ color: "#ffffff" }}>FIN </span>
+          <span style={{ color: "#21A1A1" }}>TASK</span>
+        </span>
+      </NavLink>
 
       <ul className="app-navbar__links">
         <li>

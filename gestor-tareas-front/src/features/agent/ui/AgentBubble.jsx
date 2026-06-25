@@ -1,6 +1,5 @@
 import { useAgent } from "../model/useAgent";
 import AgentPanel from "./AgentPanel";
-import AriaIcon from "./AriaIcon";
 
 const AgentBubble = ({ notificaciones = [] }) => {
   const {
@@ -41,7 +40,7 @@ const AgentBubble = ({ notificaciones = [] }) => {
       >
         {isOpen
           ? <i className="bi bi-x-lg"></i>
-          : <AriaIcon size={26} animated />
+          : <img src="/ia.png" alt="Aria IA" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "50%" }} />
         }
         {hasAlerts && !isOpen && (
           <span className="agent-bubble__badge">{notificaciones.length}</span>

@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import AriaIcon from "./AriaIcon";
 
 const AgentPanel = ({
   messages,
@@ -31,7 +30,7 @@ const AgentPanel = ({
       <div className="agent-panel__header">
         <div className="agent-panel__brand">
           <div className="agent-avatar">
-            <AriaIcon size={18} />
+            <img src="/ia.png" alt="Aria" style={{ width: "22px", height: "22px", objectFit: "contain", borderRadius: "50%" }} />
           </div>
           <div>
             <div className="agent-panel__name">Aria</div>
@@ -66,7 +65,7 @@ const AgentPanel = ({
           >
             {msg.role === "agent" && (
               <div className="agent-message__avatar">
-                <AriaIcon size={18} />
+                <img src="/ia.png" alt="Aria" style={{ width: "18px", height: "18px", objectFit: "contain", borderRadius: "50%" }} />
               </div>
             )}
             <div className="agent-message__bubble">{msg.text}</div>
@@ -76,7 +75,7 @@ const AgentPanel = ({
         {isLoading && (
           <div className="agent-message agent-message--agent">
             <div className="agent-message__avatar">
-              <AriaIcon size={18} />
+              <img src="/ia.png" alt="Aria" style={{ width: "18px", height: "18px", objectFit: "contain", borderRadius: "50%" }} />
             </div>
             <div className="agent-message__bubble agent-typing">
               <span></span><span></span><span></span>

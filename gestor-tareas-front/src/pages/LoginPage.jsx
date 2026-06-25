@@ -11,13 +11,9 @@ const LoginPage = ({ onLogin }) => {
     e.preventDefault();
     setError("");
     setCargando(true);
-
-    // Guarda las credenciales temporalmente para que el interceptor las use
     const token = btoa(`${usuario}:${password}`);
     sessionStorage.setItem("auth", token);
-
     try {
-      // Verifica las credenciales contra cualquier endpoint protegido
       await apiClient.get("/api/tareas");
       onLogin();
     } catch (err) {
@@ -34,13 +30,20 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="login-wrapper">
-      <div className="login-card">
-        <div className="login-card__brand">
-          <i className="bi bi-check2-square"></i>
-          <span>Gestor de Tareas</span>
-        </div>
+      {/* Hero — zona azul superior con logo y nombre de la app */}
+      <div className="login-hero">
+        <img src="/logo_pricipal.png" alt="FIN TASK" className="login-hero__logo" />
+        <p className="login-hero__title">
+          <span style={{ color: "#ffffff" }}>FIN </span>
+          <span style={{ color: "#21A1A1" }}>TASK</span>
+        </p>
+        <p className="login-hero__sub">Control de gastos y tareas personales</p>
+      </div>
 
+      {/* Bottom sheet card — solo el formulario */}
+      <div className="login-card">
         <h2 className="login-card__titulo">Iniciar sesión</h2>
+        <p className="login-card__sub">Bienvenido de nuevo</p>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -53,9 +56,9 @@ const LoginPage = ({ onLogin }) => {
               onChange={(e) => setUsuario(e.target.value)}
               required
               autoFocus
+              placeholder="Ingresa tu usuario"
             />
           </div>
-
           <div className="mb-3">
             <label className="form-label">Contraseña</label>
             <input
@@ -65,24 +68,32 @@ const LoginPage = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="alert alert-danger py-2" style={{ fontSize: "0.84rem" }}>
-              <i className="bi bi-exclamation-circle me-1"></i>{error}
+            <div className="alert alert-danger py-2 mb-3" style={{ fontSize: "0.82rem" }}>
+              <i className="bi bi-shield-x me-1"></i>{error}
             </div>
           )}
 
           <button
             type="submit"
             className="btn btn-add w-100 mt-1"
+            style={{ justifyContent: "center", borderRadius: "var(--radius-pill)", padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
             disabled={cargando}
           >
-            {cargando
-              ? <><i className="bi bi-hourglass-split me-1"></i>Verificando…</>
-              : <><i className="bi bi-box-arrow-in-right me-1"></i>Entrar</>
-            }
+            {cargando ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status"
+                  style={{ width: "1rem", height: "1rem", borderWidth: "2px", color: "white" }}>
+                </span>
+                Verificando…
+              </>
+            ) : (
+              <><i className="bi bi-box-arrow-in-right me-1"></i>Entrar</>
+            )}
           </button>
         </form>
       </div>

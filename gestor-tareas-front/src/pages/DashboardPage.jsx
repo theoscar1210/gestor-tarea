@@ -8,12 +8,23 @@ import { obtenerTareas } from "../features/tasks/api/tasksApi";
 const fmt = (n) =>
   Number(n || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
-const MODULOS = [
-  { to: "/tareas",      icon: "bi-check2-square",  label: "Tareas",      color: "#4f46e5", bg: "#ede9fe" },
-  { to: "/mercado",     icon: "bi-cart3",           label: "Mercado",     color: "#059669", bg: "#d1fae5" },
-  { to: "/pagos",       icon: "bi-calendar-check",  label: "Pagos",       color: "#d97706", bg: "#fef3c7" },
-  { to: "/presupuesto", icon: "bi-pie-chart",        label: "Presupuesto", color: "#0891b2", bg: "#cffafe" },
+const fmtShort = (n) => {
+  const num = Number(n || 0);
+  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
+  if (num >= 1_000)     return `$${(num / 1_000).toFixed(0)}K`;
+  return fmt(num);
+};
+
+const ACTION_MODULES = [
+  { to: "/tareas",      icon: "bi-check2-square", label: "Tareas" },
+  { to: "/mercado",     icon: "bi-cart3",          label: "Mercado" },
+  { to: "/pagos",       icon: "bi-calendar-check", label: "Pagos" },
+  { to: "/presupuesto", icon: "bi-pie-chart",       label: "Presupuesto" },
 ];
+
+const hora = new Date().getHours();
+const saludo = hora < 12 ? "Buenos días" : hora < 18 ? "Buenas tardes" : "Buenas noches";
+const fechaStr = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
 
 const DashboardPage = () => {
   const [tareas,      setTareas]      = useState([]);
@@ -29,172 +40,187 @@ const DashboardPage = () => {
   }, []);
 
   const tareasPendientes = tareas.filter((t) => !t.realizado);
-  const hoy = new Date().toISOString().split("T")[0];
-  const tareasHoy = tareasPendientes.filter((t) => t.vencimiento?.startsWith?.(hoy) || false);
+  const hoy              = new Date().toISOString().split("T")[0];
+  const tareasHoy        = tareasPendientes.filter((t) => t.vencimiento?.startsWith?.(hoy));
   const mercadoPendiente = mercado.filter((i) => !i.comprado);
 
-  return (
-    <main className="app-content">
-      <div className="page-header">
-        <h1 className="page-header__title">
-          <i className="bi bi-speedometer2"></i> Dashboard
-        </h1>
-        <p className="page-header__sub">
-          {new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-        </p>
-      </div>
+  const balanceLabel  = presupuesto ? "Disponible este mes" : "Sin presupuesto activo";
+  const balanceAmount = presupuesto ? fmtShort(presupuesto.disponible) : "$0";
+  const balanceSub    = presupuesto
+    ? `Ejecutado: ${Number(presupuesto.porcentajeEjec || 0).toFixed(0)}%`
+    : "Inicia tu presupuesto en Presupuesto";
 
-      {/* Accesos directos */}
-      <div className="row g-3 mb-4">
-        {MODULOS.map((m) => (
-          <div key={m.to} className="col-6 col-md-3">
-            <Link to={m.to} className="dashboard-modulo" style={{ borderTop: `3px solid ${m.color}` }}>
-              <div className="dashboard-modulo__icono" style={{ background: m.bg, color: m.color }}>
+  return (
+    <div className="dw-screen">
+      {/* ── HERO — blue gradient section ── */}
+      <div className="dw-hero">
+        {/* Greeting row */}
+        <div className="dw-greeting">
+          <div className="dw-greeting__text">
+            <h2>{saludo} 👋</h2>
+            <p style={{ textTransform: "capitalize" }}>{fechaStr}</p>
+          </div>
+          <div className="dw-greeting__actions">
+            <button className="dw-bell-btn" title="Notificaciones">
+              <i className="bi bi-bell"></i>
+              {proximas.length > 0 && (
+                <span style={{
+                  position: "absolute", top: 2, right: 2,
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "#E24B4A", border: "1.5px solid white",
+                }}></span>
+              )}
+            </button>
+            <div className="dw-avatar" title="Perfil">FT</div>
+          </div>
+        </div>
+
+        {/* Balance card */}
+        <div className="dw-balance-card">
+          <div className="dw-balance-card__left">
+            <p className="dw-balance-card__label">{balanceLabel}</p>
+            <p className="dw-balance-card__amount">{balanceAmount}</p>
+            <p className="dw-balance-card__sub">{balanceSub}</p>
+          </div>
+          <Link to="/presupuesto" className="btn-accent">
+            {presupuesto ? "Ver detalle" : "Iniciar"}
+          </Link>
+        </div>
+
+        {/* Action icon grid */}
+        <div className="dw-actions-grid">
+          {ACTION_MODULES.map((m) => (
+            <Link key={m.to} to={m.to} className="dw-action-btn">
+              <div className="dw-action-btn__icon">
                 <i className={`bi ${m.icon}`}></i>
               </div>
-              <span>{m.label}</span>
+              <span className="dw-action-btn__label">{m.label}</span>
             </Link>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="row g-3">
-        {/* Tareas del día */}
-        <div className="col-12 col-lg-6">
-          <div className="form-card h-100">
-            <p className="form-card__title">
-              <i className="bi bi-check2-square"></i> Tareas de hoy
-              <span className="ms-auto badge" style={{ background: "#ede9fe", color: "#4f46e5", borderRadius: 20, fontSize: "0.72rem" }}>
-                {tareasPendientes.length} pendientes
-              </span>
-            </p>
-            {tareasHoy.length === 0 ? (
-              <p style={{ fontSize: "0.84rem", color: "var(--color-muted)" }}>
-                {tareasPendientes.length === 0
-                  ? "¡Sin tareas pendientes! 🎉"
-                  : "No hay tareas con vencimiento hoy."}
-              </p>
-            ) : (
-              <ul className="dashboard-lista">
-                {tareasHoy.slice(0, 5).map((t) => (
-                  <li key={t.id} className="dashboard-lista__item">
-                    <i className="bi bi-clock" style={{ color: "var(--color-warning)" }}></i>
-                    <span>{t.titulo}</span>
-                    {t.prioridad === "alta" && (
-                      <span className="badge badge-alta ms-auto">{t.prioridad}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link to="/tareas" className="dashboard-link-ver">Ver todas →</Link>
-          </div>
-        </div>
-
-        {/* Próximos pagos */}
-        <div className="col-12 col-lg-6">
-          <div className="form-card h-100">
-            <p className="form-card__title">
-              <i className="bi bi-calendar-check"></i> Próximos vencimientos
-              {proximas.length > 0 && (
-                <span className="ms-auto badge" style={{ background: "#fee2e2", color: "#dc2626", borderRadius: 20, fontSize: "0.72rem" }}>
-                  {proximas.length} urgentes
-                </span>
-              )}
-            </p>
-            {proximas.length === 0 ? (
-              <p style={{ fontSize: "0.84rem", color: "var(--color-muted)" }}>Sin vencimientos en los próximos 5 días.</p>
-            ) : (
-              <ul className="dashboard-lista">
-                {proximas.slice(0, 3).map((o) => {
-                  const urgencia = o.diasRestantes <= 2 ? "#ef4444" : o.diasRestantes <= 5 ? "#f59e0b" : "#10b981";
-                  return (
-                    <li key={o.id} className="dashboard-lista__item">
-                      <i className="bi bi-exclamation-circle" style={{ color: urgencia }}></i>
-                      <span>{o.nombre}</span>
-                      <span className="ms-auto" style={{ fontSize: "0.75rem", color: urgencia, fontWeight: 600 }}>
-                        {o.diasRestantes === 0 ? "¡Hoy!" : `${o.diasRestantes}d`}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <Link to="/pagos" className="dashboard-link-ver">Ver todos →</Link>
-          </div>
-        </div>
-
-        {/* Mercado pendiente */}
-        <div className="col-12 col-lg-6">
-          <div className="form-card h-100">
-            <p className="form-card__title">
-              <i className="bi bi-cart3"></i> Lista de mercado
-              <span className="ms-auto badge" style={{ background: "#d1fae5", color: "#059669", borderRadius: 20, fontSize: "0.72rem" }}>
-                {mercadoPendiente.length} pendientes
-              </span>
-            </p>
-            {mercadoPendiente.length === 0 ? (
-              <p style={{ fontSize: "0.84rem", color: "var(--color-muted)" }}>Lista vacía o todo comprado.</p>
-            ) : (
-              <ul className="dashboard-lista">
-                {mercadoPendiente.slice(0, 5).map((item) => (
-                  <li key={item.id} className="dashboard-lista__item">
-                    <i className="bi bi-circle" style={{ color: "#059669" }}></i>
-                    <span>{item.nombre}</span>
-                    <span className="ms-auto" style={{ fontSize: "0.75rem", color: "var(--color-muted)" }}>
-                      {item.cantidad} {item.unidad}
+      {/* ── CONTENT PANEL — white rounded card ── */}
+      <div className="dw-content-panel">
+        {/* Upcoming payments */}
+        {proximas.length > 0 && (
+          <>
+            <div className="dw-section-header">
+              <h3 className="dw-section-header__title">Vencimientos próximos</h3>
+              <Link to="/pagos" className="dw-section-header__link">Ver todos</Link>
+            </div>
+            <ul className="tx-list" style={{ marginBottom: "1.5rem" }}>
+              {proximas.slice(0, 3).map((o) => {
+                const colorClass =
+                  o.diasRestantes <= 2 ? "tx-item__icon--danger"
+                  : o.diasRestantes <= 5 ? "tx-item__icon--warning"
+                  : "";
+                const amtClass =
+                  o.diasRestantes <= 2 ? "tx-item__amount--negative"
+                  : "tx-item__amount--muted";
+                return (
+                  <li key={o.id} className="tx-item">
+                    <div className={`tx-item__icon ${colorClass}`}>
+                      <i className="bi bi-calendar-check"></i>
+                    </div>
+                    <div className="tx-item__body">
+                      <p className="tx-item__title">{o.nombre}</p>
+                      <p className="tx-item__sub">Vence en {o.diasRestantes === 0 ? "¡hoy!" : `${o.diasRestantes} días`}</p>
+                    </div>
+                    <span className={`tx-item__amount ${amtClass}`}>
+                      {o.monto ? fmt(o.monto) : `día ${o.diaVencimiento}`}
                     </span>
                   </li>
-                ))}
-              </ul>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        {/* Tareas de hoy */}
+        <div className="dw-section-header">
+          <h3 className="dw-section-header__title">
+            Tareas de hoy
+            {tareasPendientes.length > 0 && (
+              <span style={{
+                marginLeft: "0.5rem",
+                background: "var(--color-surface)",
+                color: "var(--color-primary)",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                padding: "0.12em 0.55em",
+                borderRadius: "var(--radius-pill)",
+                border: "1px solid var(--color-pale)",
+              }}>
+                {tareasPendientes.length}
+              </span>
             )}
-            <Link to="/mercado" className="dashboard-link-ver">Ver lista →</Link>
-          </div>
+          </h3>
+          <Link to="/tareas" className="dw-section-header__link">Ver todas</Link>
         </div>
 
-        {/* Saldo del mes */}
-        <div className="col-12 col-lg-6">
-          <div className="form-card h-100">
-            <p className="form-card__title">
-              <i className="bi bi-wallet2"></i> Presupuesto del mes
-            </p>
-            {!presupuesto ? (
-              <p style={{ fontSize: "0.84rem", color: "var(--color-muted)" }}>
-                No has iniciado el presupuesto de este mes.
-              </p>
-            ) : (
-              <div>
-                <div className="d-flex justify-content-between mb-2" style={{ fontSize: "0.84rem" }}>
-                  <span style={{ color: "var(--color-muted)" }}>Ingresos</span>
-                  <strong>{fmt(presupuesto.presupuesto?.salarioTotal)}</strong>
-                </div>
-                <div className="d-flex justify-content-between mb-2" style={{ fontSize: "0.84rem" }}>
-                  <span style={{ color: "var(--color-muted)" }}>Gastado</span>
-                  <strong style={{ color: "#ef4444" }}>{fmt(presupuesto.totalGastado)}</strong>
-                </div>
-                <div className="d-flex justify-content-between mb-3" style={{ fontSize: "0.9rem" }}>
-                  <span style={{ fontWeight: 600 }}>Disponible</span>
-                  <strong style={{ color: "#10b981", fontSize: "1.05rem" }}>{fmt(presupuesto.disponible)}</strong>
-                </div>
-                <div className="progress" style={{ height: "8px" }}>
-                  <div
-                    className="progress-bar"
-                    style={{
-                      width: `${Math.min(Number(presupuesto.porcentajeEjec || 0), 100)}%`,
-                      background: Number(presupuesto.porcentajeEjec) > 90 ? "#ef4444" : "#4f46e5",
-                    }}
-                  ></div>
-                </div>
-                <p style={{ fontSize: "0.72rem", color: "var(--color-muted)", marginTop: "0.4rem" }}>
-                  {Number(presupuesto.porcentajeEjec || 0).toFixed(1)}% ejecutado
-                </p>
-              </div>
-            )}
-            <Link to="/presupuesto" className="dashboard-link-ver">Ver presupuesto →</Link>
+        {tareasHoy.length === 0 ? (
+          <div style={{ padding: "1.5rem 0", textAlign: "center", color: "rgba(10,22,40,0.38)", fontSize: "0.875rem", fontFamily: "Poppins, sans-serif" }}>
+            {tareasPendientes.length === 0
+              ? "¡Sin tareas pendientes! 🎉"
+              : "No hay tareas que venzan hoy."}
           </div>
-        </div>
+        ) : (
+          <ul className="tx-list" style={{ marginBottom: "1.5rem" }}>
+            {tareasHoy.slice(0, 5).map((t) => (
+              <li key={t.id} className="tx-item">
+                <div className={`tx-item__icon ${t.prioridad === "alta" ? "tx-item__icon--danger" : ""}`}>
+                  <i className="bi bi-check2-square"></i>
+                </div>
+                <div className="tx-item__body">
+                  <p className="tx-item__title">{t.titulo}</p>
+                  <p className="tx-item__sub">{t.categoria || "Sin categoría"}</p>
+                </div>
+                {t.prioridad === "alta" && (
+                  <span className="badge-alta" style={{ fontSize: "0.65rem", fontFamily: "Poppins", padding: "0.2em 0.55em", borderRadius: "999px" }}>Alta</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Lista de mercado */}
+        {mercadoPendiente.length > 0 && (
+          <>
+            <div className="dw-section-header">
+              <h3 className="dw-section-header__title">
+                Mercado pendiente
+                <span style={{
+                  marginLeft: "0.5rem",
+                  background: "rgba(16,185,129,0.1)",
+                  color: "#065F46",
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  padding: "0.12em 0.55em",
+                  borderRadius: "var(--radius-pill)",
+                }}>
+                  {mercadoPendiente.length}
+                </span>
+              </h3>
+              <Link to="/mercado" className="dw-section-header__link">Ver lista</Link>
+            </div>
+            <ul className="tx-list">
+              {mercadoPendiente.slice(0, 4).map((item) => (
+                <li key={item.id} className="tx-item">
+                  <div className="tx-item__icon tx-item__icon--success">
+                    <i className="bi bi-bag"></i>
+                  </div>
+                  <div className="tx-item__body">
+                    <p className="tx-item__title">{item.nombre}</p>
+                    <p className="tx-item__sub">{item.cantidad} {item.unidad}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
-    </main>
+    </div>
   );
 };
 

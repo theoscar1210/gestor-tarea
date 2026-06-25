@@ -26,7 +26,7 @@ const ListaObligaciones = ({ obligaciones, onPagar, onActualizar, onEliminar }) 
   if (!obligaciones.length) {
     return (
       <div className="empty-state">
-        <i className="bi bi-calendar-x"></i>
+        <i className="bi bi-calendar-x" style={{ color: "var(--color-pale)" }}></i>
         <p>No tienes obligaciones registradas aún.</p>
       </div>
     );
@@ -51,11 +51,17 @@ const ListaObligaciones = ({ obligaciones, onPagar, onActualizar, onEliminar }) 
       );
     }
 
+    const diasColor =
+      o.pagadoEsteMes ? "var(--color-success)"
+      : dias <= 2 ? "var(--color-negative)"
+      : dias <= 6 ? "var(--color-warning)"
+      : "var(--color-success)";
+
     return (
       <div key={o.id} className="col-12 col-md-6 col-lg-4">
         <div className={`obligacion-card obligacion-card--${urgencia}`}>
           <div className="obligacion-card__header">
-            <div className="obligacion-card__icono">
+            <div className="obligacion-card__icono" style={{ color: diasColor }}>
               <i className={`bi ${TIPO_ICON[o.tipo] || "bi-receipt"}`}></i>
             </div>
             <div className="obligacion-card__info">
@@ -63,7 +69,17 @@ const ListaObligaciones = ({ obligaciones, onPagar, onActualizar, onEliminar }) 
               <span>{TIPO_LABEL[o.tipo] || o.tipo}</span>
             </div>
             {o.pagadoEsteMes ? (
-              <span className="badge bg-success ms-auto">
+              <span style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                padding: "0.2em 0.55em",
+                borderRadius: "var(--radius-pill)",
+                background: "rgba(16,185,129,0.12)",
+                color: "#065F46",
+                border: "1px solid rgba(16,185,129,0.3)",
+                whiteSpace: "nowrap",
+              }}>
                 <i className="bi bi-check2-circle me-1"></i>Pagado
               </span>
             ) : (
@@ -74,16 +90,13 @@ const ListaObligaciones = ({ obligaciones, onPagar, onActualizar, onEliminar }) 
           </div>
 
           <div className="obligacion-card__detalle">
-            {o.monto && (
-              <span className="obligacion-card__monto">{fmt(o.monto)}</span>
-            )}
+            {o.monto && <span className="obligacion-card__monto">{fmt(o.monto)}</span>}
             {o.pagadoEsteMes ? (
-              <span className="obligacion-card__venc" style={{ color: "#10b981" }}>
-                <i className="bi bi-calendar-check me-1"></i>
-                Pagado el {o.fechaPago || "este mes"}
+              <span style={{ color: "var(--color-success)", fontSize: "0.78rem", fontFamily: "Poppins" }}>
+                <i className="bi bi-calendar-check me-1"></i>{o.fechaPago || "este mes"}
               </span>
             ) : (
-              <span className="obligacion-card__venc">Vence día {o.diaVencimiento}</span>
+              <span>Vence día {o.diaVencimiento}</span>
             )}
           </div>
 
@@ -110,22 +123,18 @@ const ListaObligaciones = ({ obligaciones, onPagar, onActualizar, onEliminar }) 
       {pendientes.length > 0 && (
         <>
           <p className="section-title">
-            <i className="bi bi-clock me-1"></i>Pendientes ({pendientes.length})
+            <i className="bi bi-clock me-1" style={{ color: "var(--color-warning)" }}></i>
+            Pendientes ({pendientes.length})
           </p>
-          <div className="row g-3 mb-4">
-            {pendientes.map(renderCard)}
-          </div>
+          <div className="row g-3 mb-4">{pendientes.map(renderCard)}</div>
         </>
       )}
-
       {pagadas.length > 0 && (
         <>
-          <p className="section-title" style={{ color: "#10b981" }}>
+          <p className="section-title" style={{ color: "var(--color-success)" }}>
             <i className="bi bi-check2-all me-1"></i>Pagadas este mes ({pagadas.length})
           </p>
-          <div className="row g-3">
-            {pagadas.map(renderCard)}
-          </div>
+          <div className="row g-3">{pagadas.map(renderCard)}</div>
         </>
       )}
     </>

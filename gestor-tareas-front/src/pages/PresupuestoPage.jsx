@@ -171,8 +171,8 @@ const PresupuestoPage = () => {
         </p>
       </div>
 
-      {/* Tabs */}
-      <ul className="nav nav-tabs mb-3">
+      {/* Tabs — Digital Wallet style */}
+      <ul className="nav nav-tabs mb-4">
         {[
           { key: "resumen",    label: "Resumen",    icon: "bi-grid-1x2" },
           { key: "gastos",     label: "Gastos",     icon: "bi-receipt" },
@@ -183,7 +183,6 @@ const PresupuestoPage = () => {
             <button
               className={`nav-link ${tab === t.key ? "active" : ""}`}
               onClick={() => setTab(t.key)}
-              style={{ fontSize: "0.85rem" }}
             >
               <i className={`bi ${t.icon} me-1`}></i>{t.label}
             </button>
