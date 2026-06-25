@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { enviarMensaje } from "../api/agentApi";
 
-const SALUDO_INICIAL = "¡Hola! Soy Aria, tu asistente de tareas. ¿En qué te puedo ayudar hoy? Puedes preguntarme sobre tus tareas pendientes, pedirme sugerencias o usar el micrófono para hablar conmigo.";
+const SALUDO_INICIAL = "¡Hola! Soy Aria, tu asistente personal. Ahora tengo acceso a todo tu sistema: tareas, lista de mercado, pagos y presupuesto. Puedes preguntarme cualquier cosa o usar el micrófono para hablar conmigo.";
 
 /**
  * Selecciona la mejor voz española disponible.

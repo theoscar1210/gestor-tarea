@@ -7,6 +7,7 @@ import MercadoPage from "../pages/MercadoPage";
 import PagosPage from "../pages/PagosPage";
 import PresupuestoPage from "../pages/PresupuestoPage";
 import Navbar from "../shared/ui/Navbar";
+import AgentBubble from "../features/agent/ui/AgentBubble";
 
 const App = () => {
   // sessionStorage persiste la sesión mientras el tab esté abierto
@@ -36,6 +37,7 @@ const App = () => {
         <Route path="/presupuesto" element={<PresupuestoPage />} />
         <Route path="*"            element={<Navigate to="/" replace />} />
       </Routes>
+      <AgentBubble />
     </BrowserRouter>
   );
 };
