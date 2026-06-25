@@ -6,3 +6,4 @@ export const crearObligacion      = (dto)      => apiClient.post("/api/obligacio
 export const actualizarObligacion = (id, dto)  => apiClient.put(`/api/obligaciones/${id}`, dto).then(r => r.data);
 export const eliminarObligacion   = (id)       => apiClient.delete(`/api/obligaciones/${id}`);
 export const registrarPago        = (id)       => apiClient.patch(`/api/obligaciones/${id}/pagar`).then(r => r.data);
+export const obtenerPagosMes      = ()         => apiClient.get("/api/obligaciones/pagos-mes").then(r => r.data);

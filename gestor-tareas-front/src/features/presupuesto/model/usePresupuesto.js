@@ -7,24 +7,26 @@ import {
   obtenerCategorias,
   obtenerProyeccion,
 } from "../api/presupuestoAPI";
+import { obtenerPagosMes } from "../../pagos/api/pagosAPI";
 
 export const usePresupuesto = () => {
-  const [resumen, setResumen]         = useState(null);
-  const [proyeccion, setProyeccion]   = useState(null);
-  const [categorias, setCategorias]   = useState([]);
-  const [cargando, setCargando]       = useState(false);
+  const [resumen, setResumen]           = useState(null);
+  const [proyeccion, setProyeccion]     = useState(null);
+  const [categorias, setCategorias]     = useState([]);
+  const [pagosObligaciones, setPagos]   = useState([]);
+  const [cargando, setCargando]         = useState(false);
 
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      const cats = await obtenerCategorias();
+      const [cats, pagos] = await Promise.all([obtenerCategorias(), obtenerPagosMes()]);
       setCategorias(cats);
+      setPagos(pagos);
       try {
         const [res, proy] = await Promise.all([obtenerActual(), obtenerProyeccion()]);
         setResumen(res);
         setProyeccion(proy);
       } catch {
-        // Sin presupuesto aún este mes
         setResumen(null);
         setProyeccion(null);
       }
@@ -58,5 +60,5 @@ export const usePresupuesto = () => {
     }
   }, [resumen, cargar]);
 
-  return { resumen, proyeccion, categorias, cargando, iniciarMes, registrarGasto };
+  return { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto };
 };

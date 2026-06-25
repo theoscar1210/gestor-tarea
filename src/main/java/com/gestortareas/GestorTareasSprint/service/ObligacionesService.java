@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +39,7 @@ public class ObligacionesService {
     }
 
     public Obligacion crear(ObligacionDTO dto) {
-        obligacionRepo.findByNombreIgnoreCase(dto.getNombre()).ifPresent(o -> {
+        obligacionRepo.findByNombreIgnoreCaseAndActivoTrue(dto.getNombre()).ifPresent(o -> {
             throw new IllegalArgumentException("Ya existe una obligación con el nombre: " + dto.getNombre());
         });
 
@@ -116,6 +117,20 @@ public class ObligacionesService {
         }
 
         return saved;
+    }
+
+    public Map<String, Object> estadoPagoMes(Long obligacionId) {
+        String mesActual = LocalDate.now().format(FORMATTER);
+        var h = historialRepo.findByObligacionIdAndMesAno(obligacionId, mesActual);
+        Map<String, Object> estado = new java.util.LinkedHashMap<>();
+        estado.put("pagadoEsteMes", h.map(hp -> Boolean.TRUE.equals(hp.getPagado())).orElse(false));
+        estado.put("fechaPago",     h.map(hp -> hp.getFechaPago()).orElse(null));
+        return estado;
+    }
+
+    public List<HistorialPago> obtenerPagosMes() {
+        String mesActual = LocalDate.now().format(FORMATTER);
+        return historialRepo.findByMesAnoAndPagadoTrue(mesActual);
     }
 
     public int calcularDiasRestantes(Obligacion o) {

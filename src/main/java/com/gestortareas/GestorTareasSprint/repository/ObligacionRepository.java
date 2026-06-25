@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ObligacionRepository extends JpaRepository<Obligacion, Long> {
     List<Obligacion> findByActivoTrue();
     Optional<Obligacion> findByNombreIgnoreCase(String nombre);
+    Optional<Obligacion> findByNombreIgnoreCaseAndActivoTrue(String nombre);
 }

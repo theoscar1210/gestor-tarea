@@ -61,17 +61,22 @@ public class ObligacionesController {
         return service.registrarPago(id);
     }
 
-    // Añade diasRestantes al JSON de respuesta
+    @GetMapping("/pagos-mes")
+    public List<HistorialPago> obtenerPagosMes() {
+        return service.obtenerPagosMes();
+    }
+
     private Map<String, Object> enriquecerConDias(Obligacion o) {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id",              o.getId());
-        map.put("nombre",          o.getNombre());
-        map.put("tipo",            o.getTipo());
-        map.put("monto",           o.getMonto());
-        map.put("diaVencimiento",  o.getDiaVencimiento());
-        map.put("activo",          o.getActivo());
-        map.put("createdAt",       o.getCreatedAt());
-        map.put("diasRestantes",   service.calcularDiasRestantes(o));
+        map.put("id",             o.getId());
+        map.put("nombre",         o.getNombre());
+        map.put("tipo",           o.getTipo());
+        map.put("monto",          o.getMonto());
+        map.put("diaVencimiento", o.getDiaVencimiento());
+        map.put("activo",         o.getActivo());
+        map.put("createdAt",      o.getCreatedAt());
+        map.put("diasRestantes",  service.calcularDiasRestantes(o));
+        map.putAll(service.estadoPagoMes(o.getId()));
         return map;
     }
 }

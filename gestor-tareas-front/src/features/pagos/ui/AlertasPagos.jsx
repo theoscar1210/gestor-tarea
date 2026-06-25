@@ -7,7 +7,9 @@ const TIPO_LABEL = {
 };
 
 const AlertasPagos = ({ proximas, onPagar }) => {
-  if (!proximas || proximas.length === 0) return null;
+  const sinPagar = (proximas || []).filter((o) => !o.pagadoEsteMes);
+  if (sinPagar.length === 0) return null;
+  proximas = sinPagar;
 
   return (
     <div className="alertas-pagos">
