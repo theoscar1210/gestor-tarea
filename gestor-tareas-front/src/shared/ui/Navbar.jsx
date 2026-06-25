@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ onLogout }) => {
   return (
     <nav className="app-navbar">
       <div className="app-navbar__brand">
         <i className="bi bi-check2-square"></i>
         <span>Gestor de Tareas</span>
       </div>
+
       <ul className="app-navbar__links">
         <li>
           <NavLink to="/" end className={({ isActive }) => "app-nav-link" + (isActive ? " app-nav-link--active" : "")}>
@@ -39,6 +40,10 @@ const Navbar = () => {
           </NavLink>
         </li>
       </ul>
+
+      <button className="app-nav-logout" onClick={onLogout} title="Cerrar sesión">
+        <i className="bi bi-box-arrow-right"></i>
+      </button>
     </nav>
   );
 };

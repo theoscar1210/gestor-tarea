@@ -1,10 +1,8 @@
-import axios from "axios";
+import apiClient from "../../../shared/api/axiosConfig";
 
-const api = axios.create({ baseURL: "/api/obligaciones" });
-
-export const obtenerObligaciones = ()          => api.get("").then(r => r.data);
-export const obtenerProximas     = ()          => api.get("/proximas").then(r => r.data);
-export const crearObligacion     = (dto)       => api.post("", dto).then(r => r.data);
-export const actualizarObligacion = (id, dto) => api.put(`/${id}`, dto).then(r => r.data);
-export const eliminarObligacion  = (id)        => api.delete(`/${id}`);
-export const registrarPago       = (id)        => api.patch(`/${id}/pagar`).then(r => r.data);
+export const obtenerObligaciones  = ()         => apiClient.get("/api/obligaciones").then(r => r.data);
+export const obtenerProximas      = ()         => apiClient.get("/api/obligaciones/proximas").then(r => r.data);
+export const crearObligacion      = (dto)      => apiClient.post("/api/obligaciones", dto).then(r => r.data);
+export const actualizarObligacion = (id, dto)  => apiClient.put(`/api/obligaciones/${id}`, dto).then(r => r.data);
+export const eliminarObligacion   = (id)       => apiClient.delete(`/api/obligaciones/${id}`);
+export const registrarPago        = (id)       => apiClient.patch(`/api/obligaciones/${id}/pagar`).then(r => r.data);

@@ -1,10 +1,4 @@
-import axios from "axios";
+import apiClient from "../../../shared/api/axiosConfig";
 
-const api = axios.create({
-  baseURL: "/api/agente",
-});
-
-export const enviarMensaje = async (mensaje) => {
-  const response = await api.post("/chat", { mensaje });
-  return response.data.respuesta;
-};
+export const enviarMensaje = (mensaje) =>
+  apiClient.post("/api/agente/chat", { mensaje }).then(r => r.data.respuesta);

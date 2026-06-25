@@ -1,9 +1,7 @@
-import axios from "axios";
+import apiClient from "../../../shared/api/axiosConfig";
 
-const api = axios.create({ baseURL: "/api/lista-mercado" });
-
-export const obtenerLista      = ()         => api.get("").then(r => r.data);
-export const agregarItem       = (dto)      => api.post("", dto).then(r => r.data);
-export const agregarPorVoz     = (texto)    => api.post("/voz", { texto }).then(r => r.data);
-export const marcarComprado    = (id)       => api.patch(`/${id}/comprado`).then(r => r.data);
-export const eliminarItem      = (id)       => api.delete(`/${id}`);
+export const obtenerLista   = ()      => apiClient.get("/api/lista-mercado").then(r => r.data);
+export const agregarItem    = (dto)   => apiClient.post("/api/lista-mercado", dto).then(r => r.data);
+export const agregarPorVoz  = (texto) => apiClient.post("/api/lista-mercado/voz", { texto }).then(r => r.data);
+export const marcarComprado = (id)    => apiClient.patch(`/api/lista-mercado/${id}/comprado`).then(r => r.data);
+export const eliminarItem   = (id)    => apiClient.delete(`/api/lista-mercado/${id}`);
