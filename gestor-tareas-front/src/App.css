@@ -1423,7 +1423,8 @@
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center center;
   animation: ia-border-cycle 2.5s linear infinite;
 }
 
