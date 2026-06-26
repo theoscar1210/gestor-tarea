@@ -60,19 +60,6 @@ const DashboardPage = () => {
             <h2>{saludo} 👋</h2>
             <p style={{ textTransform: "capitalize" }}>{fechaStr}</p>
           </div>
-          <div className="dw-greeting__actions">
-            <button className="dw-bell-btn" title="Notificaciones">
-              <i className="bi bi-bell"></i>
-              {proximas.length > 0 && (
-                <span style={{
-                  position: "absolute", top: 2, right: 2,
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "#E24B4A", border: "1.5px solid white",
-                }}></span>
-              )}
-            </button>
-            <div className="dw-avatar" title="Perfil">FT</div>
-          </div>
         </div>
 
         {/* Balance card */}

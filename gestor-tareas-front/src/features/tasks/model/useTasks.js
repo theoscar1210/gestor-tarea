@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import {
   agregarTarea,
@@ -6,7 +6,6 @@ import {
   eliminarTarea,
   obtenerTareas,
 } from "../api/tasksApi";
-import { getDueNotifications } from "../../notifications/model/getDueNotifications";
 
 const initialForm = {
   titulo: "",
@@ -17,11 +16,8 @@ const initialForm = {
 };
 
 export const useTasks = () => {
-  const [tareas, setTareas] = useState([]);
+  const [tareas, setTareas]     = useState([]);
   const [taskForm, setTaskForm] = useState(initialForm);
-  const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
-
-  const notificaciones = useMemo(() => getDueNotifications(tareas), [tareas]);
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -132,8 +128,5 @@ export const useTasks = () => {
     agregarTareaHandler,
     eliminarTareaHandler,
     marcarComoRealizada,
-    notificaciones,
-    mostrarNotificaciones,
-    setMostrarNotificaciones,
   };
 };
