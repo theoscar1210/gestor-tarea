@@ -36,9 +36,9 @@ const LoginPage = ({ onLogin }) => {
       {/* Bottom sheet card — todo el contenido aquí */}
       <div className="login-card">
         <img
-          src="/logo_pricipal-removebg-preview.svg"
+          src="/ia.png"
           alt="FIN TASK"
-          style={{ display: "block", margin: "0 auto 0.6rem", maxHeight: "72px", width: "auto" }}
+          style={{ display: "block", margin: "0 auto 0.6rem", maxHeight: "80px", width: "auto", borderRadius: "50%" }}
         />
         <p style={{ textAlign: "center", fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.4rem", letterSpacing: "0.12em", margin: "0 0 0.15rem" }}>
           <span style={{ color: "#103D72" }}>FIN </span>
