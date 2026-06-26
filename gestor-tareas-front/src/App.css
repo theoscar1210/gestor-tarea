@@ -1420,8 +1420,8 @@
 
 /* Imagen IA con borde animado de colores */
 .agent-bubble__ia-img {
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   object-fit: contain;
   animation: ia-border-cycle 2.5s linear infinite;
