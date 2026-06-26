@@ -30,14 +30,23 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="login-wrapper">
-      {/* Hero — zona azul superior con logo y nombre de la app */}
+      {/* Hero — zona azul superior */}
       <div className="login-hero">
-        <img src="/logo_pricipal-removebg-preview.svg" alt="FIN TASK" className="login-hero__logo" style={{ filter: "brightness(0) invert(1) sepia(1) hue-rotate(140deg) saturate(3) brightness(0.85)" }} />
+        <p className="login-hero__title">
+          <span style={{ color: "#ffffff" }}>FIN </span>
+          <span style={{ color: "#21A1A1" }}>TASK</span>
+        </p>
         <p className="login-hero__sub">Control de gastos y tareas personales</p>
       </div>
 
-      {/* Bottom sheet card — solo el formulario */}
+      {/* Bottom sheet card */}
       <div className="login-card">
+        <img
+          src="/logo_pricipal-removebg-preview.svg"
+          alt="FIN TASK"
+          className="login-hero__logo"
+          style={{ display: "block", margin: "0 auto 1rem", maxHeight: "80px", width: "auto" }}
+        />
         <h2 className="login-card__titulo">Iniciar sesión</h2>
         <p className="login-card__sub">Bienvenido de nuevo</p>
 
