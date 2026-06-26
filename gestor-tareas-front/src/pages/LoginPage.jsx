@@ -30,10 +30,6 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="login-wrapper">
-      {/* Hero — zona azul, solo fondo decorativo */}
-      <div className="login-hero" />
-
-      {/* Bottom sheet card — todo el contenido aquí */}
       <div className="login-card">
         <img
           src="/ia.png"
