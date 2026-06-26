@@ -1,4 +1,10 @@
 import { useState } from "react";
+import FormGasto from "../features/presupuesto/ui/FormGasto";
+import GraficoDistribucion from "../features/presupuesto/ui/GraficoDistribucion";
+import ListaGastos from "../features/presupuesto/ui/ListaGastos";
+import ProyeccionAhorro from "../features/presupuesto/ui/ProyeccionAhorro";
+import ResumenPresupuesto from "../features/presupuesto/ui/ResumenPresupuesto";
+import { usePresupuesto } from "../features/presupuesto/model/usePresupuesto";
 
 const fmt = (n) =>
   Number(n || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -98,12 +104,6 @@ const TabPagosObligaciones = ({ pagos, resumen }) => {
     </>
   );
 };
-import FormGasto from "../features/presupuesto/ui/FormGasto";
-import GraficoDistribucion from "../features/presupuesto/ui/GraficoDistribucion";
-import ListaGastos from "../features/presupuesto/ui/ListaGastos";
-import ProyeccionAhorro from "../features/presupuesto/ui/ProyeccionAhorro";
-import ResumenPresupuesto from "../features/presupuesto/ui/ResumenPresupuesto";
-import { usePresupuesto } from "../features/presupuesto/model/usePresupuesto";
 
 const MES_ACTUAL = new Date().toISOString().slice(0, 7);
 
