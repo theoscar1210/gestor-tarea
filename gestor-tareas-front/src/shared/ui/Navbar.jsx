@@ -100,7 +100,7 @@ const Navbar = () => {
             title="Mi perfil"
           >
             <i className="bi bi-person-circle"></i>
-            <span className="app-nav-user__name">{username}</span>
+            <span className="app-nav-user__name">{username || "Usuario"}</span>
             <i className="bi bi-chevron-down app-nav-user__chevron"></i>
           </button>
 
@@ -111,7 +111,7 @@ const Navbar = () => {
                   <i className="bi bi-person-fill"></i>
                 </div>
                 <div>
-                  <div className="user-dropdown__username">{username}</div>
+                  <div className="user-dropdown__username">{username || "Usuario"}</div>
                   <div className="user-dropdown__role">Administrador</div>
                 </div>
               </div>

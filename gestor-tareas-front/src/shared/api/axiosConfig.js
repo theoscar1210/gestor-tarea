@@ -7,7 +7,9 @@ export const setAuthToken  = (token) => { _authToken = token; };
 export const clearAuthToken = ()      => { _authToken = null; };
 export const getAuthToken  = ()       => _authToken;
 
-const apiClient = axios.create();
+const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || "",
+});
 
 apiClient.interceptors.request.use((config) => {
   if (_authToken) {

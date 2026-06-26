@@ -1,20 +1,41 @@
 {
   "short_name": "FIN TASK",
   "name": "FIN TASK — Control de gastos y tareas personales",
+  "description": "Control inteligente de tareas, gastos, mercado y pagos personales.",
+  "lang": "es-CO",
+  "categories": ["finance", "productivity"],
   "icons": [
     {
       "src": "ia.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "ia.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#1565C0",
-  "background_color": "#0A1628"
+  "background_color": "#0A1628",
+  "shortcuts": [
+    {
+      "name": "Tareas",
+      "short_name": "Tareas",
+      "url": "/tareas",
+      "icons": [{ "src": "ia.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Presupuesto",
+      "short_name": "Presupuesto",
+      "url": "/presupuesto",
+      "icons": [{ "src": "ia.png", "sizes": "192x192" }]
+    }
+  ]
 }

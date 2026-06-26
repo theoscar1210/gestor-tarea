@@ -6,6 +6,7 @@ import "./index.css";
 import "./App.css";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
+import { register as registerSW } from "./serviceWorkerRegistration";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -15,3 +16,5 @@ root.render(
     </AuthProvider>
   </React.StrictMode>
 );
+
+registerSW();

@@ -5,12 +5,21 @@
 
     <!-- Favicon pestaña del navegador -->
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/ia.png" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/ia.png" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; script-src 'self'; frame-ancestors 'none'; object-src 'none';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.up.railway.app https://*.railway.app; script-src 'self'; frame-ancestors 'none'; object-src 'none';" />
     <meta name="theme-color" content="#1565C0" />
     <meta name="description" content="FIN TASK — Control de gastos y tareas personales" />
+
+    <!-- PWA — Android -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- PWA — iOS (Safari no usa manifest, necesita estas etiquetas) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FIN TASK" />
+    <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/ia.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="%PUBLIC_URL%/ia.png" />
 
     <!-- Open Graph (WhatsApp, redes sociales) -->
     <meta property="og:type"        content="website" />
@@ -24,8 +33,6 @@
     <meta name="twitter:title"       content="FIN TASK" />
     <meta name="twitter:description" content="Control de gastos y tareas personales" />
     <meta name="twitter:image"       content="%PUBLIC_URL%/ia.png" />
-
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
     <!-- Digital Wallet Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
