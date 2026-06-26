@@ -6,9 +6,9 @@ const Navbar = ({ onLogout }) => {
       {/* Logo */}
       <NavLink to="/" className="app-navbar__brand" style={{ textDecoration: "none" }}>
         <img
-          src="/fintask.png"
+          src="/fintask.svg"
           alt="FIN TASK"
-          style={{ height: "46px", width: "auto", objectFit: "contain" }}
+          style={{ height: "46px", width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }}
         />
         <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.05rem", letterSpacing: "0.08em", lineHeight: 1 }}>
           <span style={{ color: "#ffffff" }}>FIN </span>

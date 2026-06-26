@@ -32,7 +32,7 @@ const LoginPage = ({ onLogin }) => {
     <div className="login-wrapper">
       {/* Hero — zona azul superior con logo y nombre de la app */}
       <div className="login-hero">
-        <img src="/logo_pricipal.png" alt="FIN TASK" className="login-hero__logo" />
+        <img src="/logo_pricipal-removebg-preview.svg" alt="FIN TASK" className="login-hero__logo" style={{ filter: "brightness(0) invert(1)" }} />
         <p className="login-hero__title">
           <span style={{ color: "#ffffff" }}>FIN </span>
           <span style={{ color: "#21A1A1" }}>TASK</span>
