@@ -5,12 +5,7 @@ const Navbar = ({ onLogout }) => {
     <nav className="app-navbar">
       {/* Logo */}
       <NavLink to="/" className="app-navbar__brand" style={{ textDecoration: "none" }}>
-        <img
-          src="/fintask.svg"
-          alt="FIN TASK"
-          style={{ height: "46px", width: "auto", objectFit: "contain", filter: "brightness(0) invert(1) sepia(1) hue-rotate(140deg) saturate(3) brightness(0.85)" }}
-        />
-        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.05rem", letterSpacing: "0.08em", lineHeight: 1 }}>
+        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "0.1em", lineHeight: 1 }}>
           <span style={{ color: "#ffffff" }}>FIN </span>
           <span style={{ color: "#21A1A1" }}>TASK</span>
         </span>
