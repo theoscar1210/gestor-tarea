@@ -4,6 +4,7 @@ import com.gestortareas.GestorTareasSprint.dto.ObligacionDTO;
 import com.gestortareas.GestorTareasSprint.model.*;
 import com.gestortareas.GestorTareasSprint.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,10 +35,12 @@ public class ObligacionesService {
         this.categoriaRepo   = categoriaRepo;
     }
 
+    @Transactional(readOnly = true)
     public List<Obligacion> obtenerTodas() {
         return obligacionRepo.findByActivoTrue();
     }
 
+    @Transactional
     public Obligacion crear(ObligacionDTO dto) {
         obligacionRepo.findByNombreIgnoreCaseAndActivoTrue(dto.getNombre()).ifPresent(o -> {
             throw new IllegalArgumentException("Ya existe una obligación con el nombre: " + dto.getNombre());
@@ -53,6 +56,7 @@ public class ObligacionesService {
         return obligacionRepo.save(o);
     }
 
+    @Transactional
     public Obligacion actualizar(Long id, ObligacionDTO dto) {
         Obligacion o = obligacionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Obligación no encontrada: " + id));
@@ -63,6 +67,7 @@ public class ObligacionesService {
         return obligacionRepo.save(o);
     }
 
+    @Transactional
     public void eliminar(Long id) {
         Obligacion o = obligacionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Obligación no encontrada: " + id));
@@ -70,10 +75,11 @@ public class ObligacionesService {
         obligacionRepo.save(o);
     }
 
+    @Transactional(readOnly = true)
     public List<Obligacion> obtenerProximas(int dias) {
-        LocalDate hoy    = LocalDate.now();
-        int diaHoy       = hoy.getDayOfMonth();
-        int limite        = hoy.plusDays(dias).getDayOfMonth();
+        LocalDate hoy  = LocalDate.now();
+        int diaHoy     = hoy.getDayOfMonth();
+        int limite     = hoy.plusDays(dias).getDayOfMonth();
 
         return obligacionRepo.findByActivoTrue().stream()
                 .filter(o -> {
@@ -84,6 +90,9 @@ public class ObligacionesService {
                 .collect(Collectors.toList());
     }
 
+    // @Transactional garantiza atomicidad: si gastoRepo.save() falla,
+    // el historialRepo.save() también se revierte.
+    @Transactional
     public HistorialPago registrarPago(Long id) {
         Obligacion o = obligacionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Obligación no encontrada: " + id));
@@ -94,7 +103,6 @@ public class ObligacionesService {
                 .findByObligacionIdAndMesAno(id, mesActual)
                 .orElse(new HistorialPago());
 
-        // Solo registrar gasto en presupuesto si es la primera vez que se paga este mes
         boolean yaEstabaPagado = Boolean.TRUE.equals(historial.getPagado());
 
         historial.setObligacion(o);
@@ -119,6 +127,7 @@ public class ObligacionesService {
         return saved;
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> estadoPagoMes(Long obligacionId) {
         String mesActual = LocalDate.now().format(FORMATTER);
         var h = historialRepo.findByObligacionIdAndMesAno(obligacionId, mesActual);
@@ -128,6 +137,7 @@ public class ObligacionesService {
         return estado;
     }
 
+    @Transactional(readOnly = true)
     public List<HistorialPago> obtenerPagosMes() {
         String mesActual = LocalDate.now().format(FORMATTER);
         return historialRepo.findByMesAnoAndPagadoTrue(mesActual);
@@ -144,7 +154,6 @@ public class ObligacionesService {
         return (int) hoy.until(venc, java.time.temporal.ChronoUnit.DAYS);
     }
 
-    // Mapea el tipo de obligación a la categoría de gasto más apropiada
     private CategoriaGasto resolverCategoria(TipoObligacion tipo) {
         String nombre = switch (tipo) {
             case arriendo         -> "Vivienda / Arriendo";

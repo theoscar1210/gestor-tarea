@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import TareasPage from "../pages/TareasPage";
@@ -8,35 +8,29 @@ import PagosPage from "../pages/PagosPage";
 import PresupuestoPage from "../pages/PresupuestoPage";
 import Navbar from "../shared/ui/Navbar";
 import AgentBubble from "../features/agent/ui/AgentBubble";
+import ProtectedRoute from "../components/ProtectedRoute";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const App = () => {
-  // sessionStorage persiste la sesión mientras el tab esté abierto
-  const [autenticado, setAutenticado] = useState(
-    () => !!sessionStorage.getItem("auth")
-  );
+  const { isAuthenticated } = useAuth();
 
-  const handleLogin = () => setAutenticado(true);
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("auth");
-    setAutenticado(false);
-  };
-
-  if (!autenticado) {
-    return <LoginPage onLogin={handleLogin} />;
+  if (!isAuthenticated) {
+    return <LoginPage />;
   }
 
   return (
     <BrowserRouter>
-      <Navbar onLogout={handleLogout} />
-      <Routes>
-        <Route path="/"            element={<DashboardPage />} />
-        <Route path="/tareas"      element={<TareasPage />} />
-        <Route path="/mercado"     element={<MercadoPage />} />
-        <Route path="/pagos"       element={<PagosPage />} />
-        <Route path="/presupuesto" element={<PresupuestoPage />} />
-        <Route path="*"            element={<Navigate to="/" replace />} />
-      </Routes>
+      <Navbar />
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/"            element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/tareas"      element={<ProtectedRoute><TareasPage /></ProtectedRoute>} />
+          <Route path="/mercado"     element={<ProtectedRoute><MercadoPage /></ProtectedRoute>} />
+          <Route path="/pagos"       element={<ProtectedRoute><PagosPage /></ProtectedRoute>} />
+          <Route path="/presupuesto" element={<ProtectedRoute><PresupuestoPage /></ProtectedRoute>} />
+          <Route path="*"            element={<Navigate to="/" replace />} />
+        </Routes>
+      </ErrorBoundary>
       <AgentBubble />
     </BrowserRouter>
   );

@@ -12,14 +12,22 @@ public class Obligacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TipoObligacion tipo;
 
+    @Column(nullable = false)
     private BigDecimal monto;
+
+    @Column(nullable = false)
     private Integer diaVencimiento;
+
+    @Column(nullable = false)
     private Boolean activo;
+
     private LocalDateTime createdAt;
 
     public Obligacion() {}

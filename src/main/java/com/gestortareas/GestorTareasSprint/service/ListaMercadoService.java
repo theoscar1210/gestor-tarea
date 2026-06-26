@@ -4,6 +4,7 @@ import com.gestortareas.GestorTareasSprint.dto.ListaMercadoDTO;
 import com.gestortareas.GestorTareasSprint.model.ListaMercado;
 import com.gestortareas.GestorTareasSprint.repository.ListaMercadoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,23 +17,24 @@ public class ListaMercadoService {
     private final VozIAService vozIAService;
 
     public ListaMercadoService(ListaMercadoRepository repository, VozIAService vozIAService) {
-        this.repository    = repository;
-        this.vozIAService  = vozIAService;
+        this.repository   = repository;
+        this.vozIAService = vozIAService;
     }
 
+    @Transactional(readOnly = true)
     public List<ListaMercado> obtenerTodos() {
         return repository.findAll();
     }
 
+    @Transactional
     public ListaMercado agregar(ListaMercadoDTO dto) {
         String nombre = dto.getNombre().toLowerCase().trim();
         Optional<ListaMercado> existente = repository.findByNombreIgnoreCase(nombre);
 
         if (existente.isPresent()) {
-            // Si ya existe, incrementa la cantidad
             ListaMercado item = existente.get();
-            int cantActual  = item.getCantidad()  == null ? 1 : item.getCantidad();
-            int incremento  = dto.getCantidad()   == null || dto.getCantidad() < 1 ? 1 : dto.getCantidad();
+            int cantActual = item.getCantidad()  == null ? 1 : item.getCantidad();
+            int incremento = dto.getCantidad()   == null || dto.getCantidad() < 1 ? 1 : dto.getCantidad();
             item.setCantidad(cantActual + incremento);
             return repository.save(item);
         }
@@ -46,6 +48,7 @@ public class ListaMercadoService {
         return repository.save(item);
     }
 
+    @Transactional
     public List<ListaMercado> agregarPorVoz(String texto) throws Exception {
         List<String> productos = vozIAService.extraerProductos(texto);
         for (String nombre : productos) {
@@ -58,6 +61,7 @@ public class ListaMercadoService {
         return repository.findAll();
     }
 
+    @Transactional
     public ListaMercado marcarComprado(Long id) {
         ListaMercado item = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ítem no encontrado: " + id));
@@ -65,6 +69,7 @@ public class ListaMercadoService {
         return repository.save(item);
     }
 
+    @Transactional
     public void eliminar(Long id) {
         repository.deleteById(id);
     }

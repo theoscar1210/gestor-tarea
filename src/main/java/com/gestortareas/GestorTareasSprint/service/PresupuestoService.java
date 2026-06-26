@@ -5,6 +5,7 @@ import com.gestortareas.GestorTareasSprint.model.*;
 import com.gestortareas.GestorTareasSprint.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,8 +30,8 @@ public class PresupuestoService {
         this.gastoRepo       = gastoRepo;
     }
 
-    // Seed de categorías 50/30/20 si la tabla está vacía
     @PostConstruct
+    @Transactional
     public void seedCategorias() {
         if (categoriaRepo.count() > 0) return;
 
@@ -59,10 +60,12 @@ public class PresupuestoService {
         });
     }
 
+    @Transactional(readOnly = true)
     public List<CategoriaGasto> obtenerCategorias() {
         return categoriaRepo.findAll();
     }
 
+    @Transactional
     public PresupuestoMensual crearPresupuesto(String mesAno, BigDecimal salario) {
         PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
                 .orElse(new PresupuestoMensual());
@@ -72,6 +75,7 @@ public class PresupuestoService {
         return presupuestoRepo.save(p);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> obtenerResumen(String mesAno) {
         PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado para: " + mesAno));
@@ -81,33 +85,32 @@ public class PresupuestoService {
                 .map(Gasto::getMonto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal disponible    = p.getSalarioTotal().subtract(totalGastado);
+        BigDecimal disponible     = p.getSalarioTotal().subtract(totalGastado);
         BigDecimal porcentajeEjec = p.getSalarioTotal().compareTo(BigDecimal.ZERO) == 0
                 ? BigDecimal.ZERO
                 : totalGastado.divide(p.getSalarioTotal(), 4, RoundingMode.HALF_UP)
                               .multiply(BigDecimal.valueOf(100));
 
-        // Agrupación por categoría
         Map<String, BigDecimal> porCategoria = gastos.stream().collect(
                 Collectors.groupingBy(
                         g -> g.getCategoria().getNombre(),
                         Collectors.reducing(BigDecimal.ZERO, Gasto::getMonto, BigDecimal::add)
                 ));
 
-        // Proyección de ahorro al cierre del mes
         BigDecimal ahorroProyectado = proyectarAhorro(p, gastos);
 
         Map<String, Object> resumen = new LinkedHashMap<>();
-        resumen.put("presupuesto",     p);
-        resumen.put("gastos",          gastos);
-        resumen.put("totalGastado",    totalGastado);
-        resumen.put("disponible",      disponible);
-        resumen.put("porcentajeEjec",  porcentajeEjec);
-        resumen.put("porCategoria",    porCategoria);
-        resumen.put("ahorroProyectado",ahorroProyectado);
+        resumen.put("presupuesto",      p);
+        resumen.put("gastos",           gastos);
+        resumen.put("totalGastado",     totalGastado);
+        resumen.put("disponible",       disponible);
+        resumen.put("porcentajeEjec",   porcentajeEjec);
+        resumen.put("porCategoria",     porCategoria);
+        resumen.put("ahorroProyectado", ahorroProyectado);
         return resumen;
     }
 
+    @Transactional
     public Gasto agregarGasto(Long presupuestoId, GastoDTO dto) {
         PresupuestoMensual p = presupuestoRepo.findById(presupuestoId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado: " + presupuestoId));
@@ -123,14 +126,15 @@ public class PresupuestoService {
         return gastoRepo.save(g);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> obtenerProyeccion(String mesAno) {
         PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado para: " + mesAno));
         List<Gasto> gastos = gastoRepo.findByPresupuestoId(p.getId());
 
-        LocalDate hoy        = LocalDate.now();
-        int diasMes          = hoy.lengthOfMonth();
-        int diaActual        = hoy.getDayOfMonth();
+        LocalDate hoy     = LocalDate.now();
+        int diasMes       = hoy.lengthOfMonth();
+        int diaActual     = hoy.getDayOfMonth();
 
         BigDecimal gastadoHoy = gastos.stream()
                 .map(Gasto::getMonto)
@@ -140,10 +144,9 @@ public class PresupuestoService {
                 ? gastadoHoy.divide(BigDecimal.valueOf(diaActual), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        BigDecimal proyeccionTotal = gastoDiarioPromedio.multiply(BigDecimal.valueOf(diasMes));
+        BigDecimal proyeccionTotal  = gastoDiarioPromedio.multiply(BigDecimal.valueOf(diasMes));
         BigDecimal ahorroProyectado = p.getSalarioTotal().subtract(proyeccionTotal);
 
-        // Puntos para la gráfica (día → gasto acumulado real)
         Map<Integer, BigDecimal> gastoAcumuladoPorDia = new TreeMap<>();
         BigDecimal acum = BigDecimal.ZERO;
         for (int dia = 1; dia <= diaActual; dia++) {
@@ -169,9 +172,9 @@ public class PresupuestoService {
     }
 
     private BigDecimal proyectarAhorro(PresupuestoMensual p, List<Gasto> gastos) {
-        LocalDate hoy      = LocalDate.now();
-        int diaActual      = hoy.getDayOfMonth();
-        int diasMes        = hoy.lengthOfMonth();
+        LocalDate hoy  = LocalDate.now();
+        int diaActual  = hoy.getDayOfMonth();
+        int diasMes    = hoy.lengthOfMonth();
         if (diaActual == 0) return p.getSalarioTotal();
 
         BigDecimal gastadoHoy = gastos.stream()

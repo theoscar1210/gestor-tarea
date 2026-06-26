@@ -1,31 +1,22 @@
 import { useState } from "react";
-import apiClient from "../shared/api/axiosConfig";
+import { useAuth } from "../context/AuthContext";
 
-const LoginPage = ({ onLogin }) => {
-  const [usuario, setUsuario]   = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [cargando, setCargando] = useState(false);
+const LoginPage = () => {
+  const { login }                     = useAuth();
+  const [usuario,   setUsuario]       = useState("");
+  const [password,  setPassword]      = useState("");
+  const [error,     setError]         = useState("");
+  const [cargando,  setCargando]      = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setCargando(true);
-    const token = btoa(`${usuario}:${password}`);
-    sessionStorage.setItem("auth", token);
-    try {
-      await apiClient.get("/api/tareas");
-      onLogin();
-    } catch (err) {
-      sessionStorage.removeItem("auth");
-      if (err.response?.status === 401) {
-        setError("Usuario o contraseña incorrectos.");
-      } else {
-        setError("No se pudo conectar al servidor.");
-      }
-    } finally {
-      setCargando(false);
+    const resultado = await login(usuario, password);
+    if (!resultado.success) {
+      setError(resultado.mensaje);
     }
+    setCargando(false);
   };
 
   return (

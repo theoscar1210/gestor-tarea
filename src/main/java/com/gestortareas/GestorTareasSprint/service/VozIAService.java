@@ -15,9 +15,10 @@ import java.util.List;
 @Service
 public class VozIAService {
 
-    private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-4-6";
-    private static final String SYSTEM_PROMPT =
+    private static final String ANTHROPIC_URL     = "https://api.anthropic.com/v1/messages";
+    private static final String MODEL             = "claude-sonnet-4-6";
+    private static final int    MAX_TEXTO_CHARS   = 300;
+    private static final String SYSTEM_PROMPT     =
             "Eres un asistente de lista de compras del hogar. El usuario te dirá en lenguaje natural qué " +
             "productos se han agotado. Extrae los nombres y devuelve ÚNICAMENTE este JSON sin texto adicional: " +
             "{\"productos\": [\"producto1\", \"producto2\"]}. " +
@@ -27,10 +28,13 @@ public class VozIAService {
     private String apiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient   httpClient   = HttpClient.newHttpClient();
 
     public List<String> extraerProductos(String textoTranscrito) throws Exception {
-        String bodyJson = objectMapper.writeValueAsString(new AnthropicRequest(textoTranscrito));
+        String textoSanitizado = sanitizarEntrada(textoTranscrito);
+        if (textoSanitizado.isBlank()) return List.of();
+
+        String bodyJson = objectMapper.writeValueAsString(new AnthropicRequest(textoSanitizado));
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ANTHROPIC_URL))
@@ -42,7 +46,12 @@ public class VozIAService {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         JsonNode root = objectMapper.readTree(response.body());
-        String text = root.path("content").get(0).path("text").asText();
+
+        JsonNode contentNode = root.path("content");
+        if (!contentNode.isArray() || contentNode.size() == 0) return List.of();
+
+        String text = contentNode.get(0).path("text").asText();
+        if (text.isBlank()) return List.of();
 
         JsonNode parsed = objectMapper.readTree(text);
         JsonNode productosNode = parsed.path("productos");
@@ -55,21 +64,28 @@ public class VozIAService {
         return productos;
     }
 
-    // DTO interno para la petición a la API de Anthropic
+    private String sanitizarEntrada(String entrada) {
+        if (entrada == null) return "";
+        String limitada = entrada.length() > MAX_TEXTO_CHARS
+                ? entrada.substring(0, MAX_TEXTO_CHARS)
+                : entrada;
+        return limitada.replaceAll("[\\p{Cntrl}&&[^\n\t\r]]", "").trim();
+    }
+
     private class AnthropicRequest {
-        private final String model = MODEL;
-        private final int max_tokens = 256;
-        private final String system = SYSTEM_PROMPT;
+        private final String    model      = MODEL;
+        private final int       max_tokens = 256;
+        private final String    system     = SYSTEM_PROMPT;
         private final Message[] messages;
 
         AnthropicRequest(String userText) {
             this.messages = new Message[]{ new Message("user", userText) };
         }
 
-        public String getModel() { return model; }
-        public int getMax_tokens() { return max_tokens; }
-        public String getSystem() { return system; }
-        public Message[] getMessages() { return messages; }
+        public String    getModel()      { return model; }
+        public int       getMax_tokens() { return max_tokens; }
+        public String    getSystem()     { return system; }
+        public Message[] getMessages()   { return messages; }
     }
 
     private static class Message {

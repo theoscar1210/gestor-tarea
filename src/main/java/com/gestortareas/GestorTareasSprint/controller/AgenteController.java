@@ -2,6 +2,7 @@ package com.gestortareas.GestorTareasSprint.controller;
 
 import com.gestortareas.GestorTareasSprint.model.MensajeRequest;
 import com.gestortareas.GestorTareasSprint.service.AgenteService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/agente")
-@CrossOrigin(origins = "*")
 public class AgenteController {
 
     private final AgenteService agenteService;
@@ -19,7 +19,7 @@ public class AgenteController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chat(@RequestBody MensajeRequest request) {
+    public ResponseEntity<Map<String, String>> chat(@Valid @RequestBody MensajeRequest request) {
         try {
             String respuesta = agenteService.chat(request.getMensaje());
             return ResponseEntity.ok(Map.of("respuesta", respuesta));

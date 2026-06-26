@@ -4,6 +4,7 @@ import com.gestortareas.GestorTareasSprint.dto.ObligacionDTO;
 import com.gestortareas.GestorTareasSprint.model.HistorialPago;
 import com.gestortareas.GestorTareasSprint.model.Obligacion;
 import com.gestortareas.GestorTareasSprint.service.ObligacionesService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +15,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/obligaciones")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ObligacionesController {
 
     private final ObligacionesService service;
@@ -31,7 +31,7 @@ public class ObligacionesController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody ObligacionDTO dto) {
+    public ResponseEntity<?> crear(@Valid @RequestBody ObligacionDTO dto) {
         try {
             return ResponseEntity.ok(service.crear(dto));
         } catch (IllegalArgumentException e) {
@@ -40,7 +40,7 @@ public class ObligacionesController {
     }
 
     @PutMapping("/{id}")
-    public Obligacion actualizar(@PathVariable Long id, @RequestBody ObligacionDTO dto) {
+    public Obligacion actualizar(@PathVariable Long id, @Valid @RequestBody ObligacionDTO dto) {
         return service.actualizar(id, dto);
     }
 

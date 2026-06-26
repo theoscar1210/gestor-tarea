@@ -1,49 +1,37 @@
-package com.gestortareas.GestorTareasSprint.model;
+package com.gestortareas.GestorTareasSprint.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.util.Date;
 
-@Entity
-public class Tarea {
+public class TareaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 200)
+    @NotBlank(message = "El título no puede estar vacío")
+    @Size(max = 200, message = "El título no puede superar 200 caracteres")
     private String titulo;
 
-    @Column(length = 1000)
+    @Size(max = 1000, message = "La descripción no puede superar 1000 caracteres")
     private String descripcion;
 
     private Date vencimiento;
 
-    @Column(length = 100)
+    @Size(max = 100, message = "La categoría no puede superar 100 caracteres")
     private String categoria;
 
-    @Column(length = 10)
+    @Pattern(regexp = "^(alta|media|baja)$", message = "La prioridad debe ser 'alta', 'media' o 'baja'")
     private String prioridad;
 
     private boolean realizado;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
-
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-
     public Date getVencimiento() { return vencimiento; }
     public void setVencimiento(Date vencimiento) { this.vencimiento = vencimiento; }
-
     public String getCategoria() { return categoria; }
     public void setCategoria(String categoria) { this.categoria = categoria; }
-
     public String getPrioridad() { return prioridad; }
     public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
-
     public boolean isRealizado() { return realizado; }
     public void setRealizado(boolean realizado) { this.realizado = realizado; }
 }

@@ -1,21 +1,24 @@
 package com.gestortareas.GestorTareasSprint.controller;
 
 import com.gestortareas.GestorTareasSprint.dto.GastoDTO;
+import com.gestortareas.GestorTareasSprint.dto.PresupuestoDTO;
 import com.gestortareas.GestorTareasSprint.model.CategoriaGasto;
 import com.gestortareas.GestorTareasSprint.model.Gasto;
 import com.gestortareas.GestorTareasSprint.model.PresupuestoMensual;
 import com.gestortareas.GestorTareasSprint.service.PresupuestoService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+@Validated
 @RestController
 @RequestMapping("/api/presupuesto")
-@CrossOrigin(origins = "http://localhost:3000")
 public class PresupuestoController {
 
     private final PresupuestoService service;
@@ -31,10 +34,8 @@ public class PresupuestoController {
     }
 
     @PostMapping
-    public PresupuestoMensual crearPresupuesto(@RequestBody Map<String, Object> body) {
-        String mesAno  = (String) body.get("mesAno");
-        BigDecimal sal = new BigDecimal(body.get("salarioTotal").toString());
-        return service.crearPresupuesto(mesAno, sal);
+    public PresupuestoMensual crearPresupuesto(@Valid @RequestBody PresupuestoDTO dto) {
+        return service.crearPresupuesto(dto.getMesAno(), dto.getSalarioTotal());
     }
 
     @GetMapping("/actual")
@@ -44,12 +45,15 @@ public class PresupuestoController {
     }
 
     @GetMapping("/{mesAno}")
-    public Map<String, Object> obtenerPorMes(@PathVariable String mesAno) {
+    public Map<String, Object> obtenerPorMes(
+            @PathVariable
+            @Pattern(regexp = "^\\d{4}-\\d{2}$", message = "Formato debe ser yyyy-MM")
+            String mesAno) {
         return service.obtenerResumen(mesAno);
     }
 
     @PostMapping("/{id}/gastos")
-    public Gasto agregarGasto(@PathVariable Long id, @RequestBody GastoDTO dto) {
+    public Gasto agregarGasto(@PathVariable Long id, @Valid @RequestBody GastoDTO dto) {
         return service.agregarGasto(id, dto);
     }
 

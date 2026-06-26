@@ -1,49 +1,62 @@
 package com.gestortareas.GestorTareasSprint.controller;
 
+import com.gestortareas.GestorTareasSprint.dto.TareaDTO;
 import com.gestortareas.GestorTareasSprint.model.Tarea;
 import com.gestortareas.GestorTareasSprint.repository.TareaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tareas")
-@CrossOrigin(origins = "http://localhost:3000") // Permite solicitudes desde el frontend (cambia si usas otro puerto o dominio)
 public class TareaController {
 
-    @Autowired
-    private TareaRepository tareaRepository;
+    private final TareaRepository tareaRepository;
 
-    // Obtener todas las tareas
+    public TareaController(TareaRepository tareaRepository) {
+        this.tareaRepository = tareaRepository;
+    }
+
     @GetMapping
     public List<Tarea> obtenerTareas() {
         return tareaRepository.findAll();
     }
 
-    // Crear una nueva tarea
     @PostMapping
-    public Tarea agregarTarea(@RequestBody Tarea tarea) {
-        return tareaRepository.save(tarea);
+    public Tarea agregarTarea(@Valid @RequestBody TareaDTO dto) {
+        return tareaRepository.save(mapearDto(dto, new Tarea()));
     }
 
-    // Obtener una tarea por ID
     @GetMapping("/{id}")
-    public Optional<Tarea> obtenerTarea(@PathVariable Long id) {
-        return tareaRepository.findById(id);
+    public ResponseEntity<Tarea> obtenerTarea(@PathVariable Long id) {
+        return tareaRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Editar una tarea existente
     @PutMapping("/{id}")
-    public Tarea editarTarea(@PathVariable Long id, @RequestBody Tarea tarea) {
-        tarea.setId(id);
-        return tareaRepository.save(tarea);
+    public ResponseEntity<Tarea> editarTarea(@PathVariable Long id, @Valid @RequestBody TareaDTO dto) {
+        return tareaRepository.findById(id)
+                .map(tarea -> ResponseEntity.ok(tareaRepository.save(mapearDto(dto, tarea))))
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Eliminar una tarea
     @DeleteMapping("/{id}")
-    public void eliminarTarea(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarTarea(@PathVariable Long id) {
+        if (!tareaRepository.existsById(id)) return ResponseEntity.notFound().build();
         tareaRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private Tarea mapearDto(TareaDTO dto, Tarea tarea) {
+        tarea.setTitulo(dto.getTitulo());
+        tarea.setDescripcion(dto.getDescripcion());
+        tarea.setVencimiento(dto.getVencimiento());
+        tarea.setCategoria(dto.getCategoria());
+        tarea.setPrioridad(dto.getPrioridad());
+        tarea.setRealizado(dto.isRealizado());
+        return tarea;
     }
 }

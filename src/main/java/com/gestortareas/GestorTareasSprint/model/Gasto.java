@@ -1,5 +1,6 @@
 package com.gestortareas.GestorTareasSprint.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,7 +13,10 @@ public class Gasto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // LAZY + @JsonIgnore: el presupuesto nunca se serializa desde un Gasto.
+    // El presupuesto llega al frontend vía el campo 'presupuesto' del resumen.
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "presupuesto_id")
     private PresupuestoMensual presupuesto;
 
@@ -20,8 +24,13 @@ public class Gasto {
     @JoinColumn(name = "categoria_id")
     private CategoriaGasto categoria;
 
+    @Column(length = 200)
     private String descripcion;
+
+    @Column(nullable = false)
     private BigDecimal monto;
+
+    @Column(nullable = false)
     private LocalDate fecha;
 
     public Gasto() {}

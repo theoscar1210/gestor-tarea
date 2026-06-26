@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { obtenerTareas } from "../../features/tasks/api/tasksApi";
 import { getDueNotifications } from "../../features/notifications/model/getDueNotifications";
 import NotificationList from "../../features/notifications/ui/NotificationList";
 
-const Navbar = ({ onLogout }) => {
-  const [notificaciones, setNotificaciones] = useState([]);
-  const [showNotif, setShowNotif]           = useState(false);
-  const [showUser,  setShowUser]            = useState(false);
+const Navbar = () => {
+  const { username, logout }                    = useAuth();
+  const [notificaciones, setNotificaciones]     = useState([]);
+  const [showNotif,      setShowNotif]          = useState(false);
+  const [showUser,       setShowUser]           = useState(false);
   const notifRef = useRef(null);
   const userRef  = useRef(null);
-
-  const token    = sessionStorage.getItem("auth");
-  const username = token ? atob(token).split(":")[0] : "Usuario";
 
   useEffect(() => {
     obtenerTareas()
@@ -40,11 +39,11 @@ const Navbar = ({ onLogout }) => {
 
       <ul className="app-navbar__links">
         {[
-          { to: "/",           end: true,  icon: "bi-speedometer2",    label: "Dashboard"   },
-          { to: "/tareas",     end: false, icon: "bi-check2-square",   label: "Tareas"      },
-          { to: "/mercado",    end: false, icon: "bi-cart3",           label: "Mercado"     },
-          { to: "/pagos",      end: false, icon: "bi-calendar-check",  label: "Pagos"       },
-          { to: "/presupuesto",end: false, icon: "bi-pie-chart",       label: "Presupuesto" },
+          { to: "/",            end: true,  icon: "bi-speedometer2",   label: "Dashboard"   },
+          { to: "/tareas",      end: false, icon: "bi-check2-square",  label: "Tareas"      },
+          { to: "/mercado",     end: false, icon: "bi-cart3",          label: "Mercado"     },
+          { to: "/pagos",       end: false, icon: "bi-calendar-check", label: "Pagos"       },
+          { to: "/presupuesto", end: false, icon: "bi-pie-chart",      label: "Presupuesto" },
         ].map(({ to, end, icon, label }) => (
           <li key={to}>
             <NavLink
@@ -117,7 +116,7 @@ const Navbar = ({ onLogout }) => {
                 </div>
               </div>
               <hr style={{ margin: "0.4rem 0", borderColor: "rgba(255,255,255,0.1)" }} />
-              <button className="user-dropdown__logout" onClick={onLogout}>
+              <button className="user-dropdown__logout" onClick={logout}>
                 <i className="bi bi-box-arrow-right"></i>
                 Cerrar sesión
               </button>

@@ -3,6 +3,7 @@ package com.gestortareas.GestorTareasSprint.controller;
 import com.gestortareas.GestorTareasSprint.dto.ListaMercadoDTO;
 import com.gestortareas.GestorTareasSprint.model.ListaMercado;
 import com.gestortareas.GestorTareasSprint.service.ListaMercadoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/lista-mercado")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ListaMercadoController {
 
     private final ListaMercadoService service;
@@ -26,7 +26,7 @@ public class ListaMercadoController {
     }
 
     @PostMapping
-    public ListaMercado agregar(@RequestBody ListaMercadoDTO dto) {
+    public ListaMercado agregar(@Valid @RequestBody ListaMercadoDTO dto) {
         return service.agregar(dto);
     }
 

@@ -11,10 +11,18 @@ public class ListaMercado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(nullable = false)
     private Integer cantidad;
+
+    @Column(length = 20)
     private String unidad;
+
+    @Column(nullable = false)
     private Boolean comprado;
+
     private LocalDateTime fechaAgregado;
 
     public ListaMercado() {}
