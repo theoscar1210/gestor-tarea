@@ -40,7 +40,7 @@ const AgentBubble = ({ notificaciones = [] }) => {
       >
         {isOpen
           ? <i className="bi bi-x-lg"></i>
-          : <img src="/ia.png" alt="Aria IA" style={{ width: "32px", height: "32px", objectFit: "contain", borderRadius: "50%" }} />
+          : <img src="/ia.png" alt="Aria IA" className="agent-bubble__ia-img" />
         }
         {hasAlerts && !isOpen && (
           <span className="agent-bubble__badge">{notificaciones.length}</span>

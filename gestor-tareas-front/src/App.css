@@ -173,9 +173,9 @@
 .login-card {
   background: var(--color-white);
   border-radius: 28px 28px 0 0;
-  padding: 2rem 1.75rem 2.5rem;
+  padding: 1.4rem 1.4rem 1.8rem;
   width: 100%;
-  max-width: 440px;
+  max-width: 370px;
   box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
 }
 
@@ -1406,31 +1406,45 @@
   bottom: 24px;
   right: 24px;
   z-index: 500;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-light) 100%);
-  color: var(--color-white);
+  background: none;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(21,101,192,0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  animation: agentGlowBreath 3s ease-in-out infinite;
+  padding: 0;
+  transition: transform 0.2s ease;
 }
 
-@keyframes agentGlowBreath {
-  0%, 100% { box-shadow: 0 4px 20px rgba(21,101,192,0.3); }
-  50%       { box-shadow: 0 6px 35px rgba(21,101,192,0.55); }
+.agent-bubble:hover { transform: scale(1.1); }
+
+/* Imagen IA con borde animado de colores */
+.agent-bubble__ia-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: contain;
+  animation: ia-border-cycle 2.5s linear infinite;
 }
 
-.agent-bubble:hover { transform: scale(1.1); box-shadow: 0 8px 40px rgba(21,101,192,0.6); }
+@keyframes ia-border-cycle {
+  0%   { box-shadow: 0 0 0 3px #21A1A1, 0 4px 18px rgba(33,161,161,0.5); }
+  20%  { box-shadow: 0 0 0 3px #42A5F5, 0 4px 18px rgba(66,165,245,0.5); }
+  40%  { box-shadow: 0 0 0 3px #1565C0, 0 4px 18px rgba(21,101,192,0.5); }
+  60%  { box-shadow: 0 0 0 3px #8B5CF6, 0 4px 18px rgba(139,92,246,0.5); }
+  80%  { box-shadow: 0 0 0 3px #E24B4A, 0 4px 18px rgba(226,75,74,0.5); }
+  100% { box-shadow: 0 0 0 3px #21A1A1, 0 4px 18px rgba(33,161,161,0.5); }
+}
 
+/* Estado abierto: muestra X con fondo oscuro */
 .agent-bubble--open {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #475569, #334155);
-  animation: none;
+  color: var(--color-white);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 
 .agent-bubble--alert::before {
