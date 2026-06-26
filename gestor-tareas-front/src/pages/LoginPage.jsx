@@ -30,25 +30,24 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <div className="login-wrapper">
-      {/* Hero — zona azul superior */}
-      <div className="login-hero">
-        <p className="login-hero__title">
-          <span style={{ color: "#ffffff" }}>FIN </span>
-          <span style={{ color: "#21A1A1" }}>TASK</span>
-        </p>
-        <p className="login-hero__sub">Control de gastos y tareas personales</p>
-      </div>
+      {/* Hero — zona azul, solo fondo decorativo */}
+      <div className="login-hero" />
 
-      {/* Bottom sheet card */}
+      {/* Bottom sheet card — todo el contenido aquí */}
       <div className="login-card">
         <img
           src="/logo_pricipal-removebg-preview.svg"
           alt="FIN TASK"
-          className="login-hero__logo"
-          style={{ display: "block", margin: "0 auto 1rem", maxHeight: "80px", width: "auto" }}
+          style={{ display: "block", margin: "0 auto 0.6rem", maxHeight: "72px", width: "auto" }}
         />
+        <p style={{ textAlign: "center", fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.4rem", letterSpacing: "0.12em", margin: "0 0 0.15rem" }}>
+          <span style={{ color: "#103D72" }}>FIN </span>
+          <span style={{ color: "#21A1A1" }}>TASK</span>
+        </p>
+        <p style={{ textAlign: "center", fontSize: "0.75rem", color: "rgba(10,22,40,0.45)", fontFamily: "'Poppins', sans-serif", marginBottom: "1.4rem" }}>
+          Control de gastos y tareas personales
+        </p>
         <h2 className="login-card__titulo">Iniciar sesión</h2>
-        <p className="login-card__sub">Bienvenido de nuevo</p>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
