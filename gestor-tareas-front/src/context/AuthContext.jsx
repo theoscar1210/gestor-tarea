@@ -36,8 +36,26 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const loginConToken = useCallback(async (token) => {
+    setAuthToken(token);
+    try {
+      await apiClient.get("/api/tareas");
+      const usuario = atob(token).split(":")[0];
+      setIsAuthenticated(true);
+      setUsername(usuario);
+      return { success: true };
+    } catch (err) {
+      clearAuthToken();
+      if (err.response?.status === 401) {
+        localStorage.removeItem("fintask_auth_token");
+        return { success: false, mensaje: "Sesión expirada. Ingresa tu contraseña." };
+      }
+      return { success: false, mensaje: "No se pudo conectar al servidor." };
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, login, loginConToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
