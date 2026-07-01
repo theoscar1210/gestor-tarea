@@ -5,9 +5,11 @@ import com.gestortareas.GestorTareasSprint.dto.PresupuestoDTO;
 import com.gestortareas.GestorTareasSprint.model.CategoriaGasto;
 import com.gestortareas.GestorTareasSprint.model.Gasto;
 import com.gestortareas.GestorTareasSprint.model.PresupuestoMensual;
+import com.gestortareas.GestorTareasSprint.repository.GastoRepository;
 import com.gestortareas.GestorTareasSprint.service.PresupuestoService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +24,12 @@ import java.util.Map;
 public class PresupuestoController {
 
     private final PresupuestoService service;
+    private final GastoRepository    gastoRepo;
     private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("yyyy-MM");
 
-    public PresupuestoController(PresupuestoService service) {
-        this.service = service;
+    public PresupuestoController(PresupuestoService service, GastoRepository gastoRepo) {
+        this.service   = service;
+        this.gastoRepo = gastoRepo;
     }
 
     @GetMapping("/categorias")
@@ -61,5 +65,18 @@ public class PresupuestoController {
     public Map<String, Object> obtenerProyeccion() {
         String mesActual = LocalDate.now().format(FORMATO_MES);
         return service.obtenerProyeccion(mesActual);
+    }
+
+    @GetMapping("/historial")
+    public List<Map<String, Object>> obtenerHistorial(
+            @RequestParam(defaultValue = "6") int meses) {
+        return service.obtenerHistorial(meses);
+    }
+
+    @DeleteMapping("/gastos/{id}")
+    public ResponseEntity<Void> eliminarGasto(@PathVariable Long id) {
+        if (!gastoRepo.existsById(id)) return ResponseEntity.notFound().build();
+        gastoRepo.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

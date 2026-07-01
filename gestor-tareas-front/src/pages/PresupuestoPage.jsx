@@ -1,9 +1,13 @@
 import { useState } from "react";
 import FormGasto from "../features/presupuesto/ui/FormGasto";
+import FormIngreso from "../features/presupuesto/ui/FormIngreso";
 import GraficoDistribucion from "../features/presupuesto/ui/GraficoDistribucion";
+import HistorialFinanciero from "../features/presupuesto/ui/HistorialFinanciero";
 import ListaGastos from "../features/presupuesto/ui/ListaGastos";
+import ListaIngresos from "../features/presupuesto/ui/ListaIngresos";
 import ProyeccionAhorro from "../features/presupuesto/ui/ProyeccionAhorro";
 import ResumenPresupuesto from "../features/presupuesto/ui/ResumenPresupuesto";
+import { useIngresos } from "../features/presupuesto/model/useIngresos";
 import { usePresupuesto } from "../features/presupuesto/model/usePresupuesto";
 
 const fmt = (n) =>
@@ -107,9 +111,21 @@ const TabPagosObligaciones = ({ pagos, resumen }) => {
 
 const MES_ACTUAL = new Date().toISOString().slice(0, 7);
 
+const TABS = [
+  { key: "resumen",    label: "Resumen",   icon: "bi-grid-1x2" },
+  { key: "ingresos",   label: "Ingresos",  icon: "bi-arrow-up-circle" },
+  { key: "gastos",     label: "Gastos",    icon: "bi-receipt" },
+  { key: "pagos",      label: "Pagos",     icon: "bi-calendar-check" },
+  { key: "historial",  label: "Historial", icon: "bi-clock-history" },
+  { key: "proyeccion", label: "Proyección",icon: "bi-graph-up" },
+];
+
 const PresupuestoPage = () => {
-  const { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto } = usePresupuesto();
-  const [tab, setTab]         = useState("resumen");
+  const { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto, recargar } =
+    usePresupuesto();
+  const { ingresos, historial, totalMes, agregar, eliminar, borrarGasto } = useIngresos();
+
+  const [tab,     setTab]     = useState("resumen");
   const [salario, setSalario] = useState("");
 
   if (cargando) {
@@ -123,7 +139,6 @@ const PresupuestoPage = () => {
     );
   }
 
-  // Sin presupuesto aún este mes
   if (!resumen) {
     return (
       <main className="app-content">
@@ -131,13 +146,13 @@ const PresupuestoPage = () => {
           <h1 className="page-header__title">
             <i className="bi bi-pie-chart"></i> Presupuesto Mensual
           </h1>
-          <p className="page-header__sub">Ingresa tu salario para iniciar el mes</p>
+          <p className="page-header__sub">Configura el mes para comenzar a registrar</p>
         </div>
         <div className="form-card" style={{ maxWidth: 420 }}>
           <p className="form-card__title">
             <i className="bi bi-wallet2"></i> Iniciar presupuesto — {MES_ACTUAL}
           </p>
-          <label className="form-label">Salario total del mes ($)</label>
+          <label className="form-label">Salario base del mes ($) <span style={{ fontSize: "0.75rem", color: "rgba(0,0,0,0.45)" }}>(puedes agregar más fuentes en la pestaña Ingresos)</span></label>
           <div className="d-flex gap-2">
             <input
               type="number"
@@ -167,19 +182,16 @@ const PresupuestoPage = () => {
           <i className="bi bi-pie-chart"></i> Presupuesto — {resumen.presupuesto?.mesAno}
         </h1>
         <p className="page-header__sub">
-          Método 50/30/20 · {resumen.gastos?.length || 0} gastos · {pagosObligaciones.length} obligaciones pagadas
+          {ingresos.length > 0
+            ? `${ingresos.length} fuentes de ingreso · ${resumen.gastos?.length || 0} gastos · ${pagosObligaciones.length} pagos`
+            : `${resumen.gastos?.length || 0} gastos · ${pagosObligaciones.length} obligaciones pagadas`}
         </p>
       </div>
 
-      {/* Tabs — Digital Wallet style */}
-      <ul className="nav nav-tabs mb-4">
-        {[
-          { key: "resumen",    label: "Resumen",    icon: "bi-grid-1x2" },
-          { key: "gastos",     label: "Gastos",     icon: "bi-receipt" },
-          { key: "pagos",      label: "Pagos",      icon: "bi-calendar-check" },
-          { key: "proyeccion", label: "Proyección", icon: "bi-graph-up" },
-        ].map((t) => (
-          <li key={t.key} className="nav-item">
+      {/* Tabs */}
+      <ul className="nav nav-tabs mb-4" style={{ overflowX: "auto", flexWrap: "nowrap" }}>
+        {TABS.map((t) => (
+          <li key={t.key} className="nav-item" style={{ whiteSpace: "nowrap" }}>
             <button
               className={`nav-link ${tab === t.key ? "active" : ""}`}
               onClick={() => setTab(t.key)}
@@ -192,11 +204,21 @@ const PresupuestoPage = () => {
 
       {tab === "resumen" && (
         <>
-          <ResumenPresupuesto resumen={resumen} />
+          <ResumenPresupuesto resumen={resumen} totalIngresos={totalMes} />
           <p className="section-title mt-4">
             <i className="bi bi-pie-chart me-1"></i>Distribución por categoría
           </p>
           <GraficoDistribucion porCategoria={resumen.porCategoria} categorias={categorias} />
+        </>
+      )}
+
+      {tab === "ingresos" && (
+        <>
+          <FormIngreso onGuardar={agregar} />
+          <p className="section-title mt-2">
+            <i className="bi bi-list-ul me-1"></i>Ingresos registrados — {MES_ACTUAL}
+          </p>
+          <ListaIngresos ingresos={ingresos} totalMes={totalMes} onEliminar={eliminar} />
         </>
       )}
 
@@ -206,12 +228,24 @@ const PresupuestoPage = () => {
           <p className="section-title mt-2">
             <i className="bi bi-list-ul me-1"></i>Gastos del mes
           </p>
-          <ListaGastos gastos={resumen.gastos} />
+          <ListaGastos
+            gastos={resumen.gastos}
+            onEliminar={(id) => borrarGasto(id, recargar)}
+          />
         </>
       )}
 
       {tab === "pagos" && (
         <TabPagosObligaciones pagos={pagosObligaciones} resumen={resumen} />
+      )}
+
+      {tab === "historial" && (
+        <>
+          <p className="section-title">
+            <i className="bi bi-clock-history me-1"></i>Historial financiero — últimos 6 meses
+          </p>
+          <HistorialFinanciero historial={historial} />
+        </>
       )}
 
       {tab === "proyeccion" && (

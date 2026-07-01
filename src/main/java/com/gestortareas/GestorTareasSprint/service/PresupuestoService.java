@@ -20,14 +20,17 @@ public class PresupuestoService {
     private final PresupuestoMensualRepository presupuestoRepo;
     private final CategoriaGastoRepository    categoriaRepo;
     private final GastoRepository             gastoRepo;
+    private final IngresoRepository           ingresoRepo;
     private static final DateTimeFormatter    FORMATO_MES = DateTimeFormatter.ofPattern("yyyy-MM");
 
     public PresupuestoService(PresupuestoMensualRepository presupuestoRepo,
                                CategoriaGastoRepository categoriaRepo,
-                               GastoRepository gastoRepo) {
+                               GastoRepository gastoRepo,
+                               IngresoRepository ingresoRepo) {
         this.presupuestoRepo = presupuestoRepo;
         this.categoriaRepo   = categoriaRepo;
         this.gastoRepo       = gastoRepo;
+        this.ingresoRepo     = ingresoRepo;
     }
 
     @PostConstruct
@@ -169,6 +172,39 @@ public class PresupuestoService {
         proyeccion.put("diasTotales",         diasMes);
         proyeccion.put("gastoAcumulado",      gastoAcumuladoPorDia);
         return proyeccion;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerHistorial(int meses) {
+        TreeSet<String> todosMeses = new TreeSet<>(Comparator.reverseOrder());
+        presupuestoRepo.findAllByOrderByMesAnoDesc().forEach(p -> todosMeses.add(p.getMesAno()));
+        todosMeses.addAll(ingresoRepo.findDistinctMesAnoDesc());
+
+        return todosMeses.stream().limit(meses).map(mesAno -> {
+            BigDecimal totalIngresos = ingresoRepo.findByMesAno(mesAno).stream()
+                    .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Optional<PresupuestoMensual> pOpt = presupuestoRepo.findByMesAno(mesAno);
+            BigDecimal totalGastos = pOpt.map(p ->
+                    gastoRepo.findByPresupuestoId(p.getId()).stream()
+                            .map(Gasto::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add)
+            ).orElse(BigDecimal.ZERO);
+
+            BigDecimal salarioBase = pOpt
+                    .map(p -> p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO)
+                    .orElse(BigDecimal.ZERO);
+
+            BigDecimal ingresosEfectivos = totalIngresos.compareTo(BigDecimal.ZERO) > 0
+                    ? totalIngresos : salarioBase;
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("mesAno", mesAno);
+            row.put("totalIngresos", ingresosEfectivos);
+            row.put("totalGastos", totalGastos);
+            row.put("saldo", ingresosEfectivos.subtract(totalGastos));
+            row.put("tieneIngresosDetallados", totalIngresos.compareTo(BigDecimal.ZERO) > 0);
+            return row;
+        }).collect(Collectors.toList());
     }
 
     private BigDecimal proyectarAhorro(PresupuestoMensual p, List<Gasto> gastos) {

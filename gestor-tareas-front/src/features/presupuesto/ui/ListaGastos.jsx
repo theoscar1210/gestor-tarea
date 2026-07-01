@@ -1,7 +1,7 @@
 const fmt = (n) =>
   Number(n || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
-const ListaGastos = ({ gastos }) => {
+const ListaGastos = ({ gastos, onEliminar }) => {
   if (!gastos || gastos.length === 0) {
     return (
       <div className="empty-state" style={{ padding: "2rem" }}>
@@ -36,6 +36,16 @@ const ListaGastos = ({ gastos }) => {
                   {new Date(g.fecha).toLocaleDateString("es-CO", { day: "2-digit", month: "short" })}
                 </span>
                 <span className="gasto-item__monto">{fmt(g.monto)}</span>
+                {onEliminar && (
+                  <button
+                    className="btn btn-sm"
+                    style={{ color: "#ef4444", padding: "0 0.35rem", lineHeight: 1 }}
+                    onClick={() => onEliminar(g.id)}
+                    title="Eliminar gasto"
+                  >
+                    <i className="bi bi-trash3" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

@@ -60,5 +60,5 @@ export const usePresupuesto = () => {
     }
   }, [resumen, cargar]);
 
-  return { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto };
+  return { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto, recargar: cargar };
 };
