@@ -53,7 +53,6 @@ public class NotificationScheduler {
         List<Tarea> proximas = tareaRepo.findPendientesVencimientoEntre(hoy, pasado);
         if (proximas.isEmpty()) return;
 
-        long hoy0 = startOfDay(0).getTime();
         long hoy1 = startOfDay(1).getTime();
 
         long vencenHoy    = proximas.stream().filter(t -> t.getVencimiento().getTime() < hoy1).count();
