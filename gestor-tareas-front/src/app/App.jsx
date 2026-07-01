@@ -10,9 +10,11 @@ import Navbar from "../shared/ui/Navbar";
 import AgentBubble from "../features/agent/ui/AgentBubble";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
+import { usePushNotifications } from "../features/notifications/hooks/usePushNotifications";
 
 const App = () => {
   const { isAuthenticated } = useAuth();
+  usePushNotifications();
 
   if (!isAuthenticated) {
     return <LoginPage />;

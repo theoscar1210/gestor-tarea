@@ -2,8 +2,10 @@ package com.gestortareas.GestorTareasSprint;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = "com.gestortareas")
+@EnableScheduling
 // Anotación que marca esta clase como la clase principal para una aplicación Spring Boot.
 // Incluye @Configuration, @EnableAutoConfiguration y @ComponentScan, que permiten que Spring configure automáticamente la aplicación
 // y busque componentes como controladores, servicios y repositorios dentro del paquete y sus subpaquetes.

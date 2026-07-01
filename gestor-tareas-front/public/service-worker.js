@@ -38,3 +38,36 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('push', (event) => {
+  let data = { title: 'FIN TASK', body: 'Tienes notificaciones pendientes', icon: '/ia.png', tag: 'fintask', url: '/' };
+  if (event.data) {
+    try { data = { ...data, ...JSON.parse(event.data.text()) }; } catch (_) {}
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: '/ia.png',
+      tag: data.tag,
+      data: { url: data.url },
+      requireInteraction: false,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((c) => c.url.includes(self.location.origin));
+      if (existing) {
+        existing.focus();
+        existing.navigate(self.location.origin + targetUrl);
+      } else {
+        self.clients.openWindow(self.location.origin + targetUrl);
+      }
+    })
+  );
+});
