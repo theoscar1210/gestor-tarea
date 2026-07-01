@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Firebase credentials (NUNCA subir al repo) ###
+*firebase-adminsdk*.json
+*service-account*.json
