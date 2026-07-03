@@ -4,6 +4,7 @@ import com.gestortareas.GestorTareasSprint.dto.ObligacionDTO;
 import com.gestortareas.GestorTareasSprint.model.*;
 import com.gestortareas.GestorTareasSprint.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -113,15 +114,20 @@ public class ObligacionesService {
         HistorialPago saved = historialRepo.save(historial);
 
         if (!yaEstabaPagado) {
-            presupuestoRepo.findByMesAno(mesActual).ifPresent(presupuesto -> {
-                Gasto gasto = new Gasto();
-                gasto.setPresupuesto(presupuesto);
-                gasto.setCategoria(resolverCategoria(o.getTipo()));
-                gasto.setDescripcion("Pago: " + o.getNombre());
-                gasto.setMonto(o.getMonto());
-                gasto.setFecha(LocalDate.now());
-                gastoRepo.save(gasto);
-            });
+            try {
+                presupuestoRepo.findByMesAno(mesActual).ifPresent(presupuesto -> {
+                    CategoriaGasto cat = resolverCategoria(o.getTipo());
+                    Gasto gasto = new Gasto();
+                    gasto.setPresupuesto(presupuesto);
+                    gasto.setCategoria(cat);
+                    gasto.setDescripcion("Pago: " + o.getNombre());
+                    gasto.setMonto(o.getMonto());
+                    gasto.setFecha(LocalDate.now());
+                    gastoRepo.save(gasto);
+                });
+            } catch (Exception e) {
+                // El pago queda registrado aunque no se pueda vincular al presupuesto
+            }
         }
 
         return saved;
@@ -164,7 +170,7 @@ public class ObligacionesService {
         };
 
         return categoriaRepo.findByNombreIgnoreCase(nombre)
-                .orElseGet(() -> categoriaRepo.findFirstByTipo(TipoCategoria.fijo)
+                .orElseGet(() -> categoriaRepo.findAll().stream().findFirst()
                         .orElseThrow(() -> new RuntimeException("No hay categorías de gasto disponibles")));
     }
 }
