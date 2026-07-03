@@ -1,12 +1,15 @@
 import { useState } from "react";
+import ConfiguracionAhorro from "../features/presupuesto/ui/ConfiguracionAhorro";
 import FormGasto from "../features/presupuesto/ui/FormGasto";
 import FormIngreso from "../features/presupuesto/ui/FormIngreso";
 import GraficoDistribucion from "../features/presupuesto/ui/GraficoDistribucion";
 import HistorialFinanciero from "../features/presupuesto/ui/HistorialFinanciero";
 import ListaGastos from "../features/presupuesto/ui/ListaGastos";
 import ListaIngresos from "../features/presupuesto/ui/ListaIngresos";
+import PanelFondos from "../features/presupuesto/ui/PanelFondos";
 import ProyeccionAhorro from "../features/presupuesto/ui/ProyeccionAhorro";
 import ResumenPresupuesto from "../features/presupuesto/ui/ResumenPresupuesto";
+import { useFondos } from "../features/presupuesto/model/useFondos";
 import { useIngresos } from "../features/presupuesto/model/useIngresos";
 import { usePresupuesto } from "../features/presupuesto/model/usePresupuesto";
 
@@ -116,6 +119,7 @@ const TABS = [
   { key: "ingresos",   label: "Ingresos",  icon: "bi-arrow-up-circle" },
   { key: "gastos",     label: "Gastos",    icon: "bi-receipt" },
   { key: "pagos",      label: "Pagos",     icon: "bi-calendar-check" },
+  { key: "fondos",     label: "Fondos",    icon: "bi-piggy-bank" },
   { key: "historial",  label: "Historial", icon: "bi-clock-history" },
   { key: "proyeccion", label: "Proyección",icon: "bi-graph-up" },
 ];
@@ -124,6 +128,7 @@ const PresupuestoPage = () => {
   const { resumen, proyeccion, categorias, pagosObligaciones, cargando, iniciarMes, registrarGasto, recargar } =
     usePresupuesto();
   const { ingresos, historial, totalMes, agregar, eliminar, borrarGasto } = useIngresos();
+  const { balance, registrar: registrarMovimiento, guardarPorcentajes } = useFondos();
 
   const [tab,     setTab]     = useState("resumen");
   const [salario, setSalario] = useState("");
@@ -205,6 +210,10 @@ const PresupuestoPage = () => {
       {tab === "resumen" && (
         <>
           <ResumenPresupuesto resumen={resumen} totalIngresos={totalMes} />
+          <ConfiguracionAhorro
+            resumen={resumen}
+            onGuardar={(pA, pF) => guardarPorcentajes(resumen.presupuesto?.mesAno, pA, pF, recargar)}
+          />
           <p className="section-title mt-4">
             <i className="bi bi-pie-chart me-1"></i>Distribución por categoría
           </p>
@@ -237,6 +246,15 @@ const PresupuestoPage = () => {
 
       {tab === "pagos" && (
         <TabPagosObligaciones pagos={pagosObligaciones} resumen={resumen} />
+      )}
+
+      {tab === "fondos" && (
+        <>
+          <p className="section-title">
+            <i className="bi bi-piggy-bank me-1"></i>Balance de fondos acumulado
+          </p>
+          <PanelFondos balance={balance} onRegistrar={registrarMovimiento} />
+        </>
       )}
 
       {tab === "historial" && (

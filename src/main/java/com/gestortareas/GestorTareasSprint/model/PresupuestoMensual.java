@@ -18,6 +18,12 @@ public class PresupuestoMensual {
     private BigDecimal salarioTotal;
     private LocalDateTime createdAt;
 
+    @Column(name = "porcentaje_ahorro")
+    private BigDecimal porcentajeAhorro = new BigDecimal("10.00");
+
+    @Column(name = "porcentaje_fondo_emergencia")
+    private BigDecimal porcentajeFondoEmergencia = new BigDecimal("5.00");
+
     public PresupuestoMensual() {}
 
     public Long getId() { return id; }
@@ -31,4 +37,10 @@ public class PresupuestoMensual {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public BigDecimal getPorcentajeAhorro() { return porcentajeAhorro; }
+    public void setPorcentajeAhorro(BigDecimal porcentajeAhorro) { this.porcentajeAhorro = porcentajeAhorro; }
+
+    public BigDecimal getPorcentajeFondoEmergencia() { return porcentajeFondoEmergencia; }
+    public void setPorcentajeFondoEmergencia(BigDecimal v) { this.porcentajeFondoEmergencia = v; }
 }

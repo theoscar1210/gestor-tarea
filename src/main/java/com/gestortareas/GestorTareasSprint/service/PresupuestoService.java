@@ -70,11 +70,20 @@ public class PresupuestoService {
 
     @Transactional
     public PresupuestoMensual crearPresupuesto(String mesAno, BigDecimal salario) {
-        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
-                .orElse(new PresupuestoMensual());
+        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno).orElse(new PresupuestoMensual());
+        boolean esNuevo = p.getId() == null;
         p.setMesAno(mesAno);
         p.setSalarioTotal(salario);
         p.setCreatedAt(java.time.LocalDateTime.now());
+        // Hereda porcentajes del mes anterior si es nuevo
+        if (esNuevo) {
+            List<PresupuestoMensual> anteriores = presupuestoRepo.findAllByOrderByMesAnoDesc();
+            if (!anteriores.isEmpty()) {
+                PresupuestoMensual ant = anteriores.get(0);
+                p.setPorcentajeAhorro(ant.getPorcentajeAhorro());
+                p.setPorcentajeFondoEmergencia(ant.getPorcentajeFondoEmergencia());
+            }
+        }
         return presupuestoRepo.save(p);
     }
 
@@ -88,11 +97,29 @@ public class PresupuestoService {
                 .map(Gasto::getMonto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal disponible     = p.getSalarioTotal().subtract(totalGastado);
-        BigDecimal porcentajeEjec = p.getSalarioTotal().compareTo(BigDecimal.ZERO) == 0
+        // Ingresos efectivos: explícitos o salario base
+        BigDecimal ingresosExplicitos = ingresoRepo.findByMesAno(mesAno).stream()
+                .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal ingresosEfectivos = ingresosExplicitos.compareTo(BigDecimal.ZERO) > 0
+                ? ingresosExplicitos
+                : (p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO);
+
+        // Porcentajes configurados (con fallback a defaults)
+        BigDecimal pAhorro = p.getPorcentajeAhorro() != null ? p.getPorcentajeAhorro() : BigDecimal.TEN;
+        BigDecimal pFondo  = p.getPorcentajeFondoEmergencia() != null ? p.getPorcentajeFondoEmergencia() : new BigDecimal("5.00");
+
+        BigDecimal montoAhorro = ingresosEfectivos.multiply(pAhorro)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal montoFondo  = ingresosEfectivos.multiply(pFondo)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo);
+        BigDecimal saldoReal = presupuestoDisponible.subtract(totalGastado);
+
+        BigDecimal porcentajeEjec = presupuestoDisponible.compareTo(BigDecimal.ZERO) == 0
                 ? BigDecimal.ZERO
-                : totalGastado.divide(p.getSalarioTotal(), 4, RoundingMode.HALF_UP)
-                              .multiply(BigDecimal.valueOf(100));
+                : totalGastado.divide(presupuestoDisponible, 4, RoundingMode.HALF_UP)
+                              .multiply(BigDecimal.valueOf(100))
+                              .min(BigDecimal.valueOf(100));
 
         Map<String, BigDecimal> porCategoria = gastos.stream().collect(
                 Collectors.groupingBy(
@@ -103,13 +130,18 @@ public class PresupuestoService {
         BigDecimal ahorroProyectado = proyectarAhorro(p, gastos);
 
         Map<String, Object> resumen = new LinkedHashMap<>();
-        resumen.put("presupuesto",      p);
-        resumen.put("gastos",           gastos);
-        resumen.put("totalGastado",     totalGastado);
-        resumen.put("disponible",       disponible);
-        resumen.put("porcentajeEjec",   porcentajeEjec);
-        resumen.put("porCategoria",     porCategoria);
-        resumen.put("ahorroProyectado", ahorroProyectado);
+        resumen.put("presupuesto",           p);
+        resumen.put("gastos",                gastos);
+        resumen.put("totalGastado",          totalGastado);
+        resumen.put("ingresosEfectivos",     ingresosEfectivos);
+        resumen.put("montoAhorro",           montoAhorro);
+        resumen.put("montoFondoEmergencia",  montoFondo);
+        resumen.put("presupuestoDisponible", presupuestoDisponible);
+        resumen.put("saldoReal",             saldoReal);
+        resumen.put("disponible",            saldoReal); // backward compat
+        resumen.put("porcentajeEjec",        porcentajeEjec);
+        resumen.put("porCategoria",          porCategoria);
+        resumen.put("ahorroProyectado",      ahorroProyectado);
         return resumen;
     }
 
@@ -197,11 +229,27 @@ public class PresupuestoService {
             BigDecimal ingresosEfectivos = totalIngresos.compareTo(BigDecimal.ZERO) > 0
                     ? totalIngresos : salarioBase;
 
+            BigDecimal pA = pOpt.map(p -> p.getPorcentajeAhorro() != null ? p.getPorcentajeAhorro() : BigDecimal.TEN)
+                    .orElse(BigDecimal.TEN);
+            BigDecimal pF = pOpt.map(p -> p.getPorcentajeFondoEmergencia() != null ? p.getPorcentajeFondoEmergencia() : new BigDecimal("5.00"))
+                    .orElse(new BigDecimal("5.00"));
+
+            BigDecimal montoAhorro = ingresosEfectivos.multiply(pA).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal montoFondo  = ingresosEfectivos.multiply(pF).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo);
+            BigDecimal saldoReal = presupuestoDisponible.subtract(totalGastos);
+
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("mesAno", mesAno);
-            row.put("totalIngresos", ingresosEfectivos);
-            row.put("totalGastos", totalGastos);
-            row.put("saldo", ingresosEfectivos.subtract(totalGastos));
+            row.put("mesAno",               mesAno);
+            row.put("totalIngresos",         ingresosEfectivos);
+            row.put("montoAhorro",           montoAhorro);
+            row.put("montoFondoEmergencia",  montoFondo);
+            row.put("presupuestoDisponible", presupuestoDisponible);
+            row.put("totalGastos",           totalGastos);
+            row.put("saldo",                 ingresosEfectivos.subtract(totalGastos)); // sin deducción fondos
+            row.put("saldoReal",             saldoReal);
+            row.put("porcentajeAhorro",      pA);
+            row.put("porcentajeFondo",       pF);
             row.put("tieneIngresosDetallados", totalIngresos.compareTo(BigDecimal.ZERO) > 0);
             return row;
         }).collect(Collectors.toList());
