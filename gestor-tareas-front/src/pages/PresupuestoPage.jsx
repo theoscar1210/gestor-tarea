@@ -108,7 +108,7 @@ const PresupuestoPage = () => {
               className={`nav-link ${tab === t.key ? "active" : ""}`}
               onClick={() => setTab(t.key)}
             >
-              <i className={`bi ${t.icon} me-1`}></i>{t.label}
+              <i className={`bi ${t.icon} me-1`}></i><span className="tab-label">{t.label}</span>
             </button>
           </li>
         ))}

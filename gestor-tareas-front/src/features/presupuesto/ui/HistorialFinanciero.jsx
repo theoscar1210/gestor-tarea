@@ -158,8 +158,8 @@ const HistorialFinanciero = ({ historial }) => {
             <tr>
               <th>Mes</th>
               <th className="text-end" style={{ color: "#10b981" }}>Ingresos</th>
-              <th className="text-end" style={{ color: "#059669" }}>Ahorro est.</th>
-              <th className="text-end" style={{ color: "#0891b2" }}>Fondo emerg.</th>
+              <th className="text-end d-none d-sm-table-cell" style={{ color: "#059669" }}>Ahorro est.</th>
+              <th className="text-end d-none d-sm-table-cell" style={{ color: "#0891b2" }}>Fondo emerg.</th>
               <th className="text-end" style={{ color: "#ef4444" }}>Gastos</th>
               <th className="text-end">Saldo real</th>
             </tr>
@@ -168,11 +168,11 @@ const HistorialFinanciero = ({ historial }) => {
             <tr>
               <td><strong>{mesLabel(mesFiltro)}</strong></td>
               <td className="text-end">{fmt(ingresos)}</td>
-              <td className="text-end" style={{ color: "#059669" }}>
+              <td className="text-end d-none d-sm-table-cell" style={{ color: "#059669" }}>
                 {fmt(ahorro)}
                 <span style={{ fontSize: "0.7rem", color: "#6b7280" }}> ({pAhorro}%)</span>
               </td>
-              <td className="text-end" style={{ color: "#0891b2" }}>{fmt(fondo)}</td>
+              <td className="text-end d-none d-sm-table-cell" style={{ color: "#0891b2" }}>{fmt(fondo)}</td>
               <td className="text-end" style={{ color: "#ef4444" }}>{fmt(gastos)}</td>
               <td className="text-end fw-bold" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
                 {saldoReal >= 0 ? "+" : ""}{fmt(saldoReal)}

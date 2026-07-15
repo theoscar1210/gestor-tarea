@@ -67,10 +67,10 @@ const ProyeccionAhorro = ({ proyeccion }) => {
 
       <div className="grafico-container">
         <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={datos} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <LineChart data={datos} margin={{ top: 10, right: 10, left: 5, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis dataKey="dia" tick={{ fontSize: 11 }} label={{ value: "Día del mes", position: "insideBottom", offset: -2, fontSize: 11 }} />
-            <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+            <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} width={55} />
             <Tooltip formatter={(v) => fmt(v)} labelFormatter={(d) => `Día ${d}`} />
             <Legend wrapperStyle={{ fontSize: "0.78rem" }} />
             <ReferenceLine y={Number(salario)} stroke="#4f46e5" strokeDasharray="5 5" label={{ value: "Salario", fill: "#4f46e5", fontSize: 11 }} />
