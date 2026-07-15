@@ -3,6 +3,7 @@ package com.gestortareas.GestorTareasSprint.controller;
 import com.gestortareas.GestorTareasSprint.dto.TareaDTO;
 import com.gestortareas.GestorTareasSprint.model.Tarea;
 import com.gestortareas.GestorTareasSprint.repository.TareaRepository;
+import com.gestortareas.config.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,31 +22,35 @@ public class TareaController {
 
     @GetMapping
     public List<Tarea> obtenerTareas() {
-        return tareaRepository.findAll();
+        return tareaRepository.findByUsuarioId(SecurityUtils.getCurrentUserId());
     }
 
     @PostMapping
     public Tarea agregarTarea(@Valid @RequestBody TareaDTO dto) {
-        return tareaRepository.save(mapearDto(dto, new Tarea()));
+        Tarea t = new Tarea();
+        t.setUsuarioId(SecurityUtils.getCurrentUserId());
+        return tareaRepository.save(mapearDto(dto, t));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Tarea> obtenerTarea(@PathVariable Long id) {
-        return tareaRepository.findById(id)
+        return tareaRepository.findByIdAndUsuarioId(id, SecurityUtils.getCurrentUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Tarea> editarTarea(@PathVariable Long id, @Valid @RequestBody TareaDTO dto) {
-        return tareaRepository.findById(id)
+        return tareaRepository.findByIdAndUsuarioId(id, SecurityUtils.getCurrentUserId())
                 .map(tarea -> ResponseEntity.ok(tareaRepository.save(mapearDto(dto, tarea))))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarTarea(@PathVariable Long id) {
-        if (!tareaRepository.existsById(id)) return ResponseEntity.notFound().build();
+        if (!tareaRepository.existsByIdAndUsuarioId(id, SecurityUtils.getCurrentUserId())) {
+            return ResponseEntity.notFound().build();
+        }
         tareaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

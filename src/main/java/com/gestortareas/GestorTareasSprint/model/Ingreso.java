@@ -28,6 +28,9 @@ public class Ingreso {
     @Column(name = "mes_ano", nullable = false, length = 7)
     private String mesAno;
 
+    @Column(name = "usuario_id")
+    private Long usuarioId;
+
     public Ingreso() {}
 
     public Long getId() { return id; }
@@ -46,4 +49,7 @@ public class Ingreso {
 
     public String getMesAno() { return mesAno; }
     public void setMesAno(String mesAno) { this.mesAno = mesAno; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 }

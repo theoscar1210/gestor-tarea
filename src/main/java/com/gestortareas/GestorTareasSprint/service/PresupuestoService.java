@@ -3,6 +3,7 @@ package com.gestortareas.GestorTareasSprint.service;
 import com.gestortareas.GestorTareasSprint.dto.GastoDTO;
 import com.gestortareas.GestorTareasSprint.model.*;
 import com.gestortareas.GestorTareasSprint.repository.*;
+import com.gestortareas.config.SecurityUtils;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,14 +71,16 @@ public class PresupuestoService {
 
     @Transactional
     public PresupuestoMensual crearPresupuesto(String mesAno, BigDecimal salario) {
-        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno).orElse(new PresupuestoMensual());
+        Long userId = SecurityUtils.getCurrentUserId();
+        PresupuestoMensual p = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId)
+                .orElse(new PresupuestoMensual());
         boolean esNuevo = p.getId() == null;
         p.setMesAno(mesAno);
         p.setSalarioTotal(salario);
         p.setCreatedAt(java.time.LocalDateTime.now());
-        // Hereda porcentajes del mes anterior si es nuevo
+        p.setUsuarioId(userId);
         if (esNuevo) {
-            List<PresupuestoMensual> anteriores = presupuestoRepo.findAllByOrderByMesAnoDesc();
+            List<PresupuestoMensual> anteriores = presupuestoRepo.findByUsuarioIdOrderByMesAnoDesc(userId);
             if (!anteriores.isEmpty()) {
                 PresupuestoMensual ant = anteriores.get(0);
                 p.setPorcentajeAhorro(ant.getPorcentajeAhorro());
@@ -89,7 +92,8 @@ public class PresupuestoService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerResumen(String mesAno) {
-        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
+        Long userId = SecurityUtils.getCurrentUserId();
+        PresupuestoMensual p = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado para: " + mesAno));
 
         List<Gasto> gastos = gastoRepo.findByPresupuestoId(p.getId());
@@ -97,14 +101,11 @@ public class PresupuestoService {
                 .map(Gasto::getMonto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Ingresos efectivos: explícitos o salario base
-        BigDecimal ingresosExplicitos = ingresoRepo.findByMesAno(mesAno).stream()
+        BigDecimal ingresosExplicitos = ingresoRepo.findByMesAnoAndUsuarioId(mesAno, userId).stream()
                 .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal ingresosEfectivos = ingresosExplicitos.compareTo(BigDecimal.ZERO) > 0
-                ? ingresosExplicitos
-                : (p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO);
+        BigDecimal salarioBase = p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO;
+        BigDecimal ingresosEfectivos = salarioBase.add(ingresosExplicitos);
 
-        // Porcentajes configurados (con fallback a defaults)
         BigDecimal pAhorro = p.getPorcentajeAhorro() != null ? p.getPorcentajeAhorro() : BigDecimal.TEN;
         BigDecimal pFondo  = p.getPorcentajeFondoEmergencia() != null ? p.getPorcentajeFondoEmergencia() : new BigDecimal("5.00");
 
@@ -138,7 +139,7 @@ public class PresupuestoService {
         resumen.put("montoFondoEmergencia",  montoFondo);
         resumen.put("presupuestoDisponible", presupuestoDisponible);
         resumen.put("saldoReal",             saldoReal);
-        resumen.put("disponible",            saldoReal); // backward compat
+        resumen.put("disponible",            saldoReal);
         resumen.put("porcentajeEjec",        porcentajeEjec);
         resumen.put("porCategoria",          porCategoria);
         resumen.put("ahorroProyectado",      ahorroProyectado);
@@ -147,7 +148,9 @@ public class PresupuestoService {
 
     @Transactional
     public Gasto agregarGasto(Long presupuestoId, GastoDTO dto) {
+        Long userId = SecurityUtils.getCurrentUserId();
         PresupuestoMensual p = presupuestoRepo.findById(presupuestoId)
+                .filter(pm -> userId.equals(pm.getUsuarioId()))
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado: " + presupuestoId));
         CategoriaGasto c = categoriaRepo.findById(dto.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada: " + dto.getCategoriaId()));
@@ -163,7 +166,8 @@ public class PresupuestoService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerProyeccion(String mesAno) {
-        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
+        Long userId = SecurityUtils.getCurrentUserId();
+        PresupuestoMensual p = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado para: " + mesAno));
         List<Gasto> gastos = gastoRepo.findByPresupuestoId(p.getId());
 
@@ -180,7 +184,8 @@ public class PresupuestoService {
                 : BigDecimal.ZERO;
 
         BigDecimal proyeccionTotal  = gastoDiarioPromedio.multiply(BigDecimal.valueOf(diasMes));
-        BigDecimal ahorroProyectado = p.getSalarioTotal().subtract(proyeccionTotal);
+        BigDecimal ahorroProyectado = p.getSalarioTotal() != null
+                ? p.getSalarioTotal().subtract(proyeccionTotal) : BigDecimal.ZERO;
 
         Map<Integer, BigDecimal> gastoAcumuladoPorDia = new TreeMap<>();
         BigDecimal acum = BigDecimal.ZERO;
@@ -208,15 +213,16 @@ public class PresupuestoService {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> obtenerHistorial(int meses) {
+        Long userId = SecurityUtils.getCurrentUserId();
         TreeSet<String> todosMeses = new TreeSet<>(Comparator.reverseOrder());
-        presupuestoRepo.findAllByOrderByMesAnoDesc().forEach(p -> todosMeses.add(p.getMesAno()));
-        todosMeses.addAll(ingresoRepo.findDistinctMesAnoDesc());
+        presupuestoRepo.findByUsuarioIdOrderByMesAnoDesc(userId).forEach(p -> todosMeses.add(p.getMesAno()));
+        todosMeses.addAll(ingresoRepo.findDistinctMesAnoDescByUsuarioId(userId));
 
         return todosMeses.stream().limit(meses).map(mesAno -> {
-            BigDecimal totalIngresos = ingresoRepo.findByMesAno(mesAno).stream()
+            BigDecimal totalIngresos = ingresoRepo.findByMesAnoAndUsuarioId(mesAno, userId).stream()
                     .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            Optional<PresupuestoMensual> pOpt = presupuestoRepo.findByMesAno(mesAno);
+            Optional<PresupuestoMensual> pOpt = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId);
             BigDecimal totalGastos = pOpt.map(p ->
                     gastoRepo.findByPresupuestoId(p.getId()).stream()
                             .map(Gasto::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -226,8 +232,7 @@ public class PresupuestoService {
                     .map(p -> p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO)
                     .orElse(BigDecimal.ZERO);
 
-            BigDecimal ingresosEfectivos = totalIngresos.compareTo(BigDecimal.ZERO) > 0
-                    ? totalIngresos : salarioBase;
+            BigDecimal ingresosEfectivos = salarioBase.add(totalIngresos);
 
             BigDecimal pA = pOpt.map(p -> p.getPorcentajeAhorro() != null ? p.getPorcentajeAhorro() : BigDecimal.TEN)
                     .orElse(BigDecimal.TEN);
@@ -246,7 +251,7 @@ public class PresupuestoService {
             row.put("montoFondoEmergencia",  montoFondo);
             row.put("presupuestoDisponible", presupuestoDisponible);
             row.put("totalGastos",           totalGastos);
-            row.put("saldo",                 ingresosEfectivos.subtract(totalGastos)); // sin deducción fondos
+            row.put("saldo",                 ingresosEfectivos.subtract(totalGastos));
             row.put("saldoReal",             saldoReal);
             row.put("porcentajeAhorro",      pA);
             row.put("porcentajeFondo",       pF);
@@ -256,6 +261,7 @@ public class PresupuestoService {
     }
 
     private BigDecimal proyectarAhorro(PresupuestoMensual p, List<Gasto> gastos) {
+        if (p.getSalarioTotal() == null) return BigDecimal.ZERO;
         LocalDate hoy  = LocalDate.now();
         int diaActual  = hoy.getDayOfMonth();
         int diasMes    = hoy.lengthOfMonth();

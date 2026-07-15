@@ -7,7 +7,7 @@ import MercadoPage from "../pages/MercadoPage";
 import PagosPage from "../pages/PagosPage";
 import PresupuestoPage from "../pages/PresupuestoPage";
 import Navbar from "../shared/ui/Navbar";
-import AgentBubble from "../features/agent/ui/AgentBubble";
+// import AgentBubble from "../features/agent/ui/AgentBubble";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { usePushNotifications } from "../features/notifications/hooks/usePushNotifications";
@@ -33,7 +33,7 @@ const App = () => {
           <Route path="*"            element={<Navigate to="/" replace />} />
         </Routes>
       </ErrorBoundary>
-      <AgentBubble />
+      {/* <AgentBubble /> */}
     </BrowserRouter>
   );
 };

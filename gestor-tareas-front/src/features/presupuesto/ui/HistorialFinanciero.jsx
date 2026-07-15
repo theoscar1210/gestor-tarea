@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -15,6 +16,8 @@ const mesLabel = m => {
   return `${nombres[parseInt(mo, 10) - 1]} ${y.slice(2)}`;
 };
 
+const MES_ACTUAL = new Date().toISOString().slice(0, 7);
+
 const TooltipCustom = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -30,6 +33,12 @@ const TooltipCustom = ({ active, payload, label }) => {
 };
 
 const HistorialFinanciero = ({ historial }) => {
+  const mesDisponible = historial?.find(h => h.mesAno === MES_ACTUAL)
+    ? MES_ACTUAL
+    : (historial?.[0]?.mesAno || MES_ACTUAL);
+
+  const [mesFiltro, setMesFiltro] = useState(mesDisponible);
+
   if (!historial?.length) {
     return (
       <div className="empty-state">
@@ -40,86 +49,108 @@ const HistorialFinanciero = ({ historial }) => {
     );
   }
 
-  const datos = [...historial].reverse().map(h => ({
-    mes:       mesLabel(h.mesAno),
-    mesAno:    h.mesAno,
-    Ingresos:  Number(h.totalIngresos || 0),
-    Ahorro:    Number(h.montoAhorro   || 0),
-    Gastos:    Number(h.totalGastos   || 0),
-    SaldoReal: Number(h.saldoReal     || h.saldo || 0),
-    detallado: h.tieneIngresosDetallados,
-    pAhorro:   Number(h.porcentajeAhorro || 10),
-    pFondo:    Number(h.porcentajeFondo  || 5),
-  }));
+  const mesesDisponibles = historial.map(h => h.mesAno);
 
-  // KPIs acumulados del período — usamos saldoReal para reflejar ahorro descontado
-  const totIngresos = historial.reduce((s, h) => s + Number(h.totalIngresos || 0), 0);
-  const totAhorro   = historial.reduce((s, h) => s + Number(h.montoAhorro   || 0), 0);
-  const totFondo    = historial.reduce((s, h) => s + Number(h.montoFondoEmergencia || 0), 0);
-  const totGastos   = historial.reduce((s, h) => s + Number(h.totalGastos   || 0), 0);
-  const totSaldo    = historial.reduce((s, h) => s + Number(h.saldoReal     || h.saldo || 0), 0);
-  const promAhorro  = totAhorro / historial.length;
+  const entrada = historial.find(h => h.mesAno === mesFiltro) || historial[0];
+
+  const ingresos  = Number(entrada.totalIngresos || 0);
+  const ahorro    = Number(entrada.montoAhorro   || 0);
+  const fondo     = Number(entrada.montoFondoEmergencia || 0);
+  const gastos    = Number(entrada.totalGastos   || 0);
+  const saldoReal = Number(entrada.saldoReal     || entrada.saldo || 0);
+  const pAhorro   = Number(entrada.porcentajeAhorro || 10);
+  const detallado = entrada.tieneIngresosDetallados;
+
+  const datosGrafico = [...historial].reverse().map(h => ({
+    mes:      mesLabel(h.mesAno),
+    mesAno:   h.mesAno,
+    Ingresos: Number(h.totalIngresos || 0),
+    Ahorro:   Number(h.montoAhorro   || 0),
+    Gastos:   Number(h.totalGastos   || 0),
+  }));
 
   return (
     <>
-      {/* KPIs del período */}
+      {/* Selector de mes */}
+      <div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
+        <label className="form-label mb-0 fw-semibold" style={{ whiteSpace: "nowrap" }}>
+          <i className="bi bi-calendar3 me-1" />Mes:
+        </label>
+        <select
+          className="form-select form-select-sm"
+          style={{ maxWidth: 180 }}
+          value={mesFiltro}
+          onChange={e => setMesFiltro(e.target.value)}
+        >
+          {mesesDisponibles.map(m => (
+            <option key={m} value={m}>{mesLabel(m)}{m === MES_ACTUAL ? " (actual)" : ""}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* KPIs del mes seleccionado */}
       <div className="presup-resumen mb-4">
         <div className="presup-card" style={{ borderTop: "3px solid #10b981" }}>
           <div className="presup-card__icono" style={{ color: "#10b981" }}><i className="bi bi-arrow-up-circle-fill" /></div>
           <div className="presup-card__body">
-            <span className="presup-card__titulo">Ingresos ({historial.length} meses)</span>
-            <span className="presup-card__valor" style={{ color: "#10b981" }}>{fmt(totIngresos)}</span>
+            <span className="presup-card__titulo">Ingresos</span>
+            <span className="presup-card__valor" style={{ color: "#10b981" }}>{fmt(ingresos)}</span>
+            {!detallado && ingresos > 0 && (
+              <span style={{ fontSize: "0.7rem", color: "#9ca3af" }}>Desde salario base</span>
+            )}
           </div>
         </div>
         <div className="presup-card" style={{ borderTop: "3px solid #059669" }}>
           <div className="presup-card__icono" style={{ color: "#059669" }}><i className="bi bi-piggy-bank-fill" /></div>
           <div className="presup-card__body">
             <span className="presup-card__titulo">Ahorro destinado</span>
-            <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(totAhorro)}</span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>Prom. {fmt(promAhorro)}/mes</span>
+            <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(ahorro)}</span>
+            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>{pAhorro}% del ingreso</span>
           </div>
         </div>
         <div className="presup-card" style={{ borderTop: "3px solid #ef4444" }}>
           <div className="presup-card__icono" style={{ color: "#ef4444" }}><i className="bi bi-arrow-down-circle-fill" /></div>
           <div className="presup-card__body">
             <span className="presup-card__titulo">Gastos totales</span>
-            <span className="presup-card__valor" style={{ color: "#ef4444" }}>{fmt(totGastos)}</span>
+            <span className="presup-card__valor" style={{ color: "#ef4444" }}>{fmt(gastos)}</span>
           </div>
         </div>
-        <div className="presup-card" style={{ borderTop: totSaldo >= 0 ? "3px solid #4f46e5" : "3px solid #f59e0b" }}>
-          <div className="presup-card__icono" style={{ color: totSaldo >= 0 ? "#4f46e5" : "#f59e0b" }}>
-            <i className={`bi ${totSaldo >= 0 ? "bi-cash-stack" : "bi-exclamation-triangle"}`} />
+        <div className="presup-card" style={{ borderTop: saldoReal >= 0 ? "3px solid #4f46e5" : "3px solid #f59e0b" }}>
+          <div className="presup-card__icono" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
+            <i className={`bi ${saldoReal >= 0 ? "bi-cash-stack" : "bi-exclamation-triangle"}`} />
           </div>
           <div className="presup-card__body">
-            <span className="presup-card__titulo">Saldo real acumulado</span>
-            <span className="presup-card__valor" style={{ color: totSaldo >= 0 ? "#4f46e5" : "#f59e0b" }}>{fmt(totSaldo)}</span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>Sin contar fondos destinados</span>
+            <span className="presup-card__titulo">Saldo real</span>
+            <span className="presup-card__valor" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
+              {saldoReal >= 0 ? "+" : ""}{fmt(saldoReal)}
+            </span>
+            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>Sin fondos destinados</span>
           </div>
         </div>
       </div>
 
-      {/* Gráfico */}
+      {/* Gráfico — todos los meses para contexto */}
       <p className="section-title mb-3">
-        <i className="bi bi-bar-chart-line me-1" />Ingresos vs Gastos vs Ahorro por mes
+        <i className="bi bi-bar-chart-line me-1" />Ingresos vs Gastos vs Ahorro — comparativo
       </p>
       <div style={{ width: "100%", height: 260 }}>
         <ResponsiveContainer>
-          <BarChart data={datos} barGap={3} barSize={18}>
+          <BarChart data={datosGrafico} barGap={3} barSize={18}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
             <YAxis tickFormatter={fmtK} tick={{ fontSize: 11 }} width={62} />
             <Tooltip content={<TooltipCustom />} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="Ingresos"  fill="#10b981" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Ahorro"    fill="#059669" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Gastos"    fill="#ef4444" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Ahorro"   fill="#059669" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Gastos"   fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Tabla mes a mes */}
+      {/* Tabla del mes seleccionado */}
       <p className="section-title mt-4 mb-2">
-        <i className="bi bi-table me-1" />Detalle mensual
+        <i className="bi bi-table me-1" />Detalle — {mesLabel(mesFiltro)}
       </p>
       <div className="table-responsive">
         <table className="table table-sm table-hover align-middle">
@@ -128,43 +159,26 @@ const HistorialFinanciero = ({ historial }) => {
               <th>Mes</th>
               <th className="text-end" style={{ color: "#10b981" }}>Ingresos</th>
               <th className="text-end" style={{ color: "#059669" }}>Ahorro est.</th>
+              <th className="text-end" style={{ color: "#0891b2" }}>Fondo emerg.</th>
               <th className="text-end" style={{ color: "#ef4444" }}>Gastos</th>
               <th className="text-end">Saldo real</th>
             </tr>
           </thead>
           <tbody>
-            {[...datos].reverse().map(d => (
-              <tr key={d.mesAno}>
-                <td>
-                  <strong>{d.mes}</strong>
-                  {!d.detallado && d.Ingresos > 0 && (
-                    <i className="bi bi-info-circle ms-1" style={{ fontSize: "0.72rem", color: "#9ca3af" }}
-                       title="Ingresos desde salario base" />
-                  )}
-                </td>
-                <td className="text-end">{fmt(d.Ingresos)}</td>
-                <td className="text-end" style={{ color: "#059669" }}>
-                  {fmt(d.Ahorro)}
-                  <span style={{ fontSize: "0.7rem", color: "#6b7280" }}> ({d.pAhorro}%)</span>
-                </td>
-                <td className="text-end" style={{ color: "#ef4444" }}>{fmt(d.Gastos)}</td>
-                <td className="text-end fw-bold" style={{ color: d.SaldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
-                  {d.SaldoReal >= 0 ? "+" : ""}{fmt(d.SaldoReal)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot className="table-light">
             <tr>
-              <td><strong>Total ({historial.length} meses)</strong></td>
-              <td className="text-end fw-bold" style={{ color: "#10b981" }}>{fmt(totIngresos)}</td>
-              <td className="text-end fw-bold" style={{ color: "#059669" }}>{fmt(totAhorro)}</td>
-              <td className="text-end fw-bold" style={{ color: "#ef4444" }}>{fmt(totGastos)}</td>
-              <td className="text-end fw-bold" style={{ color: totSaldo >= 0 ? "#4f46e5" : "#f59e0b" }}>
-                {totSaldo >= 0 ? "+" : ""}{fmt(totSaldo)}
+              <td><strong>{mesLabel(mesFiltro)}</strong></td>
+              <td className="text-end">{fmt(ingresos)}</td>
+              <td className="text-end" style={{ color: "#059669" }}>
+                {fmt(ahorro)}
+                <span style={{ fontSize: "0.7rem", color: "#6b7280" }}> ({pAhorro}%)</span>
+              </td>
+              <td className="text-end" style={{ color: "#0891b2" }}>{fmt(fondo)}</td>
+              <td className="text-end" style={{ color: "#ef4444" }}>{fmt(gastos)}</td>
+              <td className="text-end fw-bold" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
+                {saldoReal >= 0 ? "+" : ""}{fmt(saldoReal)}
               </td>
             </tr>
-          </tfoot>
+          </tbody>
         </table>
       </div>
     </>

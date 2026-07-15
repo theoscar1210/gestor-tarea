@@ -1,11 +1,10 @@
 import axios from "axios";
 
-// Token en variable de módulo — inaccesible desde XSS a diferencia de sessionStorage.
 let _authToken = null;
 
-export const setAuthToken  = (token) => { _authToken = token; };
+export const setAuthToken   = (token) => { _authToken = token; };
 export const clearAuthToken = ()      => { _authToken = null; };
-export const getAuthToken  = ()       => _authToken;
+export const getAuthToken   = ()      => _authToken;
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "",
@@ -13,7 +12,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   if (_authToken) {
-    config.headers["Authorization"] = `Basic ${_authToken}`;
+    config.headers["Authorization"] = `Bearer ${_authToken}`;
   }
   return config;
 });

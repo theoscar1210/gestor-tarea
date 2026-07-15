@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 
 const ESTADOS = {
-  idle:       { label: "Dictado por voz",    icon: "bi-mic",             cls: "" },
-  escuchando: { label: "Escuchando…",         icon: "bi-mic-fill",        cls: "btn-voz--escuchando" },
-  procesando: { label: "IA procesando…",      icon: "bi-hourglass-split", cls: "btn-voz--procesando" },
-  listo:      { label: "¡Agregado!",          icon: "bi-check2-circle",   cls: "btn-voz--listo" },
+  idle:       { label: "Dictado por voz", icon: "bi-mic",             cls: "" },
+  escuchando: { label: "Escuchando…",     icon: "bi-mic-fill",        cls: "btn-voz--escuchando" },
+  procesando: { label: "Procesando…",     icon: "bi-hourglass-split", cls: "btn-voz--procesando" },
+  listo:      { label: "¡Agregado!",      icon: "bi-check2-circle",   cls: "btn-voz--listo" },
 };
 
 const BotonVoz = ({ onTextoCapturado, deshabilitado }) => {
@@ -61,7 +61,7 @@ const BotonVoz = ({ onTextoCapturado, deshabilitado }) => {
         style={{ minWidth: 200 }}
       >
         {estado === "idle"
-          ? <img src="/ia.png" alt="IA" style={{ width: "1.2rem", height: "1.2rem", objectFit: "contain" }} />
+          ? <img src="/ia.png" alt="voz" style={{ width: "1.2rem", height: "1.2rem", objectFit: "contain" }} />
           : <i className={`bi ${cfg.icon}`} style={{ fontSize: "1.05rem" }}></i>
         }
         <span>{cfg.label}</span>
@@ -74,7 +74,7 @@ const BotonVoz = ({ onTextoCapturado, deshabilitado }) => {
             <span></span>
             <span></span>
           </div>
-          <span>IA procesando...</span>
+          <span>Procesando...</span>
         </div>
       )}
     </div>

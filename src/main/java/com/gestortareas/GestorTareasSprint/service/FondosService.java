@@ -4,6 +4,7 @@ import com.gestortareas.GestorTareasSprint.dto.PorcentajesDTO;
 import com.gestortareas.GestorTareasSprint.dto.RetiroFondoDTO;
 import com.gestortareas.GestorTareasSprint.model.*;
 import com.gestortareas.GestorTareasSprint.repository.*;
+import com.gestortareas.config.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +21,9 @@ public class FondosService {
 
     private static final DateTimeFormatter FORMATO_MES = DateTimeFormatter.ofPattern("yyyy-MM");
 
-    private final MovimientoFondoRepository movimientoRepo;
+    private final MovimientoFondoRepository    movimientoRepo;
     private final PresupuestoMensualRepository presupuestoRepo;
-    private final IngresoRepository ingresoRepo;
+    private final IngresoRepository            ingresoRepo;
 
     public FondosService(MovimientoFondoRepository movimientoRepo,
                          PresupuestoMensualRepository presupuestoRepo,
@@ -32,16 +33,16 @@ public class FondosService {
         this.ingresoRepo     = ingresoRepo;
     }
 
-    /** Calcula el balance acumulado histórico de ahorro y fondo de emergencia */
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerBalance() {
-        List<PresupuestoMensual> meses = presupuestoRepo.findAllByOrderByMesAnoDesc();
+        Long userId = SecurityUtils.getCurrentUserId();
+        List<PresupuestoMensual> meses = presupuestoRepo.findByUsuarioIdOrderByMesAnoDesc(userId);
 
         BigDecimal totalAhorroGenerado = BigDecimal.ZERO;
         BigDecimal totalFondoGenerado  = BigDecimal.ZERO;
 
         for (PresupuestoMensual p : meses) {
-            BigDecimal ingresos = ingresosEfectivos(p);
+            BigDecimal ingresos = ingresosEfectivos(p, userId);
             BigDecimal pA = safe(p.getPorcentajeAhorro(), BigDecimal.TEN);
             BigDecimal pF = safe(p.getPorcentajeFondoEmergencia(), new BigDecimal("5.00"));
 
@@ -51,48 +52,48 @@ public class FondosService {
                     ingresos.multiply(pF).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
         }
 
-        BigDecimal retiradoAhorro    = movimientoRepo.sumByTipo("AHORRO_RETIRO");
-        BigDecimal retiradoEmergencia = movimientoRepo.sumByTipo("EMERGENCIA_RETIRO");
+        BigDecimal retiradoAhorro     = movimientoRepo.sumByTipoAndUsuarioId("AHORRO_RETIRO",     userId);
+        BigDecimal retiradoEmergencia = movimientoRepo.sumByTipoAndUsuarioId("EMERGENCIA_RETIRO", userId);
 
         Map<String, Object> balance = new LinkedHashMap<>();
-        balance.put("saldoAhorro",           totalAhorroGenerado.subtract(retiradoAhorro));
-        balance.put("saldoFondoEmergencia",  totalFondoGenerado.subtract(retiradoEmergencia));
-        balance.put("totalGeneradoAhorro",   totalAhorroGenerado);
-        balance.put("totalGeneradoFondo",    totalFondoGenerado);
-        balance.put("totalRetiradoAhorro",   retiradoAhorro);
-        balance.put("totalRetiradoFondo",    retiradoEmergencia);
-        balance.put("movimientos",           movimientoRepo.findAllByOrderByFechaDesc());
+        balance.put("saldoAhorro",          totalAhorroGenerado.subtract(retiradoAhorro));
+        balance.put("saldoFondoEmergencia", totalFondoGenerado.subtract(retiradoEmergencia));
+        balance.put("totalGeneradoAhorro",  totalAhorroGenerado);
+        balance.put("totalGeneradoFondo",   totalFondoGenerado);
+        balance.put("totalRetiradoAhorro",  retiradoAhorro);
+        balance.put("totalRetiradoFondo",   retiradoEmergencia);
+        balance.put("movimientos",          movimientoRepo.findByUsuarioIdOrderByFechaDesc(userId));
         return balance;
     }
 
-    /** Registra un retiro del fondo de ahorro o emergencia */
     @Transactional
     public MovimientoFondo registrarRetiro(RetiroFondoDTO dto) {
         if (!dto.getTipo().equals("AHORRO_RETIRO") && !dto.getTipo().equals("EMERGENCIA_RETIRO")) {
             throw new IllegalArgumentException("Tipo inválido: " + dto.getTipo());
         }
+        Long userId = SecurityUtils.getCurrentUserId();
         MovimientoFondo m = new MovimientoFondo();
         m.setTipo(dto.getTipo());
         m.setMonto(dto.getMonto());
         m.setDescripcion(dto.getDescripcion());
         m.setFecha(LocalDate.now());
         m.setMesAno(dto.getMesAno() != null ? dto.getMesAno() : LocalDate.now().format(FORMATO_MES));
+        m.setUsuarioId(userId);
         return movimientoRepo.save(m);
     }
 
-    /** Actualiza los porcentajes de ahorro y fondo del mes indicado */
     @Transactional
     public PresupuestoMensual actualizarPorcentajes(String mesAno, PorcentajesDTO dto) {
-        PresupuestoMensual p = presupuestoRepo.findByMesAno(mesAno)
+        Long userId = SecurityUtils.getCurrentUserId();
+        PresupuestoMensual p = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado: " + mesAno));
         p.setPorcentajeAhorro(dto.getPorcentajeAhorro());
         p.setPorcentajeFondoEmergencia(dto.getPorcentajeFondoEmergencia());
         return presupuestoRepo.save(p);
     }
 
-    /** Ingresos efectivos de un mes: suma explícita o salario base */
-    public BigDecimal ingresosEfectivos(PresupuestoMensual p) {
-        BigDecimal explicitos = ingresoRepo.findByMesAno(p.getMesAno()).stream()
+    public BigDecimal ingresosEfectivos(PresupuestoMensual p, Long userId) {
+        BigDecimal explicitos = ingresoRepo.findByMesAnoAndUsuarioId(p.getMesAno(), userId).stream()
                 .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
         return explicitos.compareTo(BigDecimal.ZERO) > 0
                 ? explicitos

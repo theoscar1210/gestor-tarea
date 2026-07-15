@@ -25,6 +25,9 @@ public class ListaMercado {
 
     private LocalDateTime fechaAgregado;
 
+    @Column(name = "usuario_id")
+    private Long usuarioId;
+
     public ListaMercado() {}
 
     public Long getId() { return id; }
@@ -44,4 +47,7 @@ public class ListaMercado {
 
     public LocalDateTime getFechaAgregado() { return fechaAgregado; }
     public void setFechaAgregado(LocalDateTime fechaAgregado) { this.fechaAgregado = fechaAgregado; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 }

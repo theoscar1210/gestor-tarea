@@ -24,6 +24,9 @@ public class PresupuestoMensual {
     @Column(name = "porcentaje_fondo_emergencia")
     private BigDecimal porcentajeFondoEmergencia = new BigDecimal("5.00");
 
+    @Column(name = "usuario_id")
+    private Long usuarioId;
+
     public PresupuestoMensual() {}
 
     public Long getId() { return id; }
@@ -43,4 +46,7 @@ public class PresupuestoMensual {
 
     public BigDecimal getPorcentajeFondoEmergencia() { return porcentajeFondoEmergencia; }
     public void setPorcentajeFondoEmergencia(BigDecimal v) { this.porcentajeFondoEmergencia = v; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 }

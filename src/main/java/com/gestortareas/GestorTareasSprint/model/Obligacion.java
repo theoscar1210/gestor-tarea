@@ -30,6 +30,9 @@ public class Obligacion {
 
     private LocalDateTime createdAt;
 
+    @Column(name = "usuario_id")
+    private Long usuarioId;
+
     public Obligacion() {}
 
     public Long getId() { return id; }
@@ -52,4 +55,7 @@ public class Obligacion {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 }

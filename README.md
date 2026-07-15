@@ -4,7 +4,7 @@ Aplicación full-stack para gestionar tareas con prioridad, categoría, estado y
 
 ## Stack actual
 
-- **Backend:** Java 17 + Spring Boot 3 + Spring Data JPA + MySQL.
+- **Backend:** Java 25 + Spring Boot 3 + Spring Data JPA + MySQL.
 - **Frontend:** React 19 + Create React App + Bootstrap 5 + SweetAlert2.
 
 ## Estructura del repositorio
@@ -42,7 +42,7 @@ Se reorganizó el frontend por dominios para mejorar mantenibilidad y escalabili
 
 ## Requisitos
 
-- Java 17
+- Java 25
 - Maven 3.9+
 - Node.js 18+
 - npm 9+

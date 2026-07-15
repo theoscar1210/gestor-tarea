@@ -13,20 +13,18 @@ export const AuthProvider = ({ children }) => {
     setUsername(null);
   }, []);
 
-  // Cierre de sesión automático cuando el interceptor detecta 401
   useEffect(() => {
     window.addEventListener("auth:expired", logout);
     return () => window.removeEventListener("auth:expired", logout);
   }, [logout]);
 
   const login = useCallback(async (usuario, password) => {
-    const token = btoa(`${usuario}:${password}`);
-    setAuthToken(token);
     try {
-      await apiClient.get("/api/tareas");
+      const { data } = await apiClient.post("/api/auth/login", { username: usuario, password });
+      setAuthToken(data.token);
       setIsAuthenticated(true);
-      setUsername(usuario);
-      return { success: true };
+      setUsername(data.username);
+      return { success: true, token: data.token, username: data.username };
     } catch (err) {
       clearAuthToken();
       if (err.response?.status === 401) {
@@ -36,18 +34,38 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const loginConToken = useCallback(async (token) => {
+  const registro = useCallback(async (usuario, password) => {
+    try {
+      const { data } = await apiClient.post("/api/auth/registro", { username: usuario, password });
+      setAuthToken(data.token);
+      setIsAuthenticated(true);
+      setUsername(data.username);
+      return { success: true, token: data.token, username: data.username };
+    } catch (err) {
+      clearAuthToken();
+      const msg = err.response?.data?.message;
+      if (err.response?.status === 400) {
+        return { success: false, mensaje: msg || "Datos inválidos. La contraseña debe tener al menos 6 caracteres." };
+      }
+      if (err.response?.status === 409) {
+        return { success: false, mensaje: "Ese nombre de usuario ya está en uso." };
+      }
+      return { success: false, mensaje: "No se pudo crear la cuenta." };
+    }
+  }, []);
+
+  const loginConToken = useCallback(async (token, savedUsername) => {
     setAuthToken(token);
     try {
       await apiClient.get("/api/tareas");
-      const usuario = atob(token).split(":")[0];
       setIsAuthenticated(true);
-      setUsername(usuario);
+      setUsername(savedUsername || "usuario");
       return { success: true };
     } catch (err) {
       clearAuthToken();
       if (err.response?.status === 401) {
         localStorage.removeItem("fintask_auth_token");
+        localStorage.removeItem("fintask_username");
         return { success: false, mensaje: "Sesión expirada. Ingresa tu contraseña." };
       }
       return { success: false, mensaje: "No se pudo conectar al servidor." };
@@ -55,7 +73,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, loginConToken, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, login, registro, loginConToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

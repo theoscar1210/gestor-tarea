@@ -3,6 +3,7 @@ package com.gestortareas.GestorTareasSprint.service;
 import com.gestortareas.GestorTareasSprint.dto.ListaMercadoDTO;
 import com.gestortareas.GestorTareasSprint.model.ListaMercado;
 import com.gestortareas.GestorTareasSprint.repository.ListaMercadoRepository;
+import com.gestortareas.config.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,27 +15,29 @@ import java.util.Optional;
 public class ListaMercadoService {
 
     private final ListaMercadoRepository repository;
-    private final VozIAService vozIAService;
+    private final VozIAService           vozService;
 
-    public ListaMercadoService(ListaMercadoRepository repository, VozIAService vozIAService) {
-        this.repository   = repository;
-        this.vozIAService = vozIAService;
+    public ListaMercadoService(ListaMercadoRepository repository, VozIAService vozService) {
+        this.repository  = repository;
+        this.vozService  = vozService;
     }
 
     @Transactional(readOnly = true)
     public List<ListaMercado> obtenerTodos() {
-        return repository.findAll();
+        Long userId = SecurityUtils.getCurrentUserId();
+        return repository.findByUsuarioId(userId);
     }
 
     @Transactional
     public ListaMercado agregar(ListaMercadoDTO dto) {
+        Long userId = SecurityUtils.getCurrentUserId();
         String nombre = dto.getNombre().toLowerCase().trim();
-        Optional<ListaMercado> existente = repository.findByNombreIgnoreCase(nombre);
+        Optional<ListaMercado> existente = repository.findByNombreIgnoreCaseAndUsuarioId(nombre, userId);
 
         if (existente.isPresent()) {
             ListaMercado item = existente.get();
-            int cantActual = item.getCantidad()  == null ? 1 : item.getCantidad();
-            int incremento = dto.getCantidad()   == null || dto.getCantidad() < 1 ? 1 : dto.getCantidad();
+            int cantActual = item.getCantidad() == null ? 1 : item.getCantidad();
+            int incremento = dto.getCantidad()  == null || dto.getCantidad() < 1 ? 1 : dto.getCantidad();
             item.setCantidad(cantActual + incremento);
             return repository.save(item);
         }
@@ -45,12 +48,14 @@ public class ListaMercadoService {
         item.setUnidad(dto.getUnidad() == null || dto.getUnidad().isBlank() ? "unidad" : dto.getUnidad());
         item.setComprado(false);
         item.setFechaAgregado(LocalDateTime.now());
+        item.setUsuarioId(userId);
         return repository.save(item);
     }
 
     @Transactional
-    public List<ListaMercado> agregarPorVoz(String texto) throws Exception {
-        List<String> productos = vozIAService.extraerProductos(texto);
+    public List<ListaMercado> agregarPorVoz(String texto) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        List<String> productos = vozService.extraerProductos(texto);
         for (String nombre : productos) {
             ListaMercadoDTO dto = new ListaMercadoDTO();
             dto.setNombre(nombre);
@@ -58,12 +63,13 @@ public class ListaMercadoService {
             dto.setUnidad("unidad");
             agregar(dto);
         }
-        return repository.findAll();
+        return repository.findByUsuarioId(userId);
     }
 
     @Transactional
     public ListaMercado marcarComprado(Long id) {
-        ListaMercado item = repository.findById(id)
+        Long userId = SecurityUtils.getCurrentUserId();
+        ListaMercado item = repository.findByIdAndUsuarioId(id, userId)
                 .orElseThrow(() -> new RuntimeException("Ítem no encontrado: " + id));
         item.setComprado(!Boolean.TRUE.equals(item.getComprado()));
         return repository.save(item);
@@ -71,6 +77,9 @@ public class ListaMercadoService {
 
     @Transactional
     public void eliminar(Long id) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        repository.findByIdAndUsuarioId(id, userId)
+                .orElseThrow(() -> new RuntimeException("Ítem no encontrado: " + id));
         repository.deleteById(id);
     }
 }

@@ -9,7 +9,7 @@ Dejar operativo el **backend Spring Boot** y el **frontend React** de forma cons
 ## 2. Prerrequisitos
 
 - Sistema operativo: Linux/macOS/Windows (WSL recomendado para Windows).
-- Java 17 instalado y en PATH.
+- Java 25 instalado y en PATH.
 - Maven 3.9+ instalado y en PATH.
 - Node.js 18+ y npm 9+ instalados.
 - MySQL 8+ en ejecución.

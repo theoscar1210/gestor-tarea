@@ -5,14 +5,14 @@ const fmt = n => Number(n || 0).toLocaleString("es-CO", { style: "currency", cur
 const MES_ACTUAL = new Date().toISOString().slice(0, 7);
 
 const TIPOS = [
-  { value: "AHORRO_RETIRO",     label: "Retiro de Ahorro",           color: "#059669", icon: "bi-piggy-bank" },
-  { value: "EMERGENCIA_RETIRO", label: "Uso Fondo de Emergencia",     color: "#dc2626", icon: "bi-shield-exclamation" },
+  { value: "AHORRO_RETIRO",     label: "Retiro de Ahorro",        color: "#059669", icon: "bi-piggy-bank" },
+  { value: "EMERGENCIA_RETIRO", label: "Uso Fondo de Emergencia", color: "#dc2626", icon: "bi-shield-exclamation" },
 ];
 
-const PanelFondos = ({ balance, onRegistrar }) => {
-  const [tipo,   setTipo]   = useState("AHORRO_RETIRO");
-  const [monto,  setMonto]  = useState("");
-  const [desc,   setDesc]   = useState("");
+const PanelFondos = ({ balance, onRegistrar, pAhorro = 10, pFondo = 5 }) => {
+  const [tipo,    setTipo]    = useState("AHORRO_RETIRO");
+  const [monto,   setMonto]   = useState("");
+  const [desc,    setDesc]    = useState("");
   const [abierto, setAbierto] = useState(false);
 
   if (!balance) {
@@ -21,6 +21,16 @@ const PanelFondos = ({ balance, onRegistrar }) => {
         <i className="bi bi-piggy-bank" />
         <p>No hay presupuestos registrados aún.</p>
         <small>Crea un presupuesto para ver el balance de tus fondos.</small>
+      </div>
+    );
+  }
+
+  if (Number(pAhorro) === 0 && Number(pFondo) === 0) {
+    return (
+      <div className="empty-state">
+        <i className="bi bi-piggy-bank" />
+        <p>Sin fondos configurados.</p>
+        <small>Ve a Resumen y configura un porcentaje de ahorro para empezar a acumular fondos.</small>
       </div>
     );
   }
@@ -36,37 +46,37 @@ const PanelFondos = ({ balance, onRegistrar }) => {
 
   return (
     <>
-      {/* Tarjetas de balance */}
       <div className="presup-resumen mb-4">
-        {/* Ahorro */}
-        <div className="presup-card" style={{ borderTop: "3px solid #059669" }}>
-          <div className="presup-card__icono" style={{ color: "#059669" }}>
-            <i className="bi bi-piggy-bank-fill" />
+        {Number(pAhorro) > 0 && (
+          <div className="presup-card" style={{ borderTop: "3px solid #059669" }}>
+            <div className="presup-card__icono" style={{ color: "#059669" }}>
+              <i className="bi bi-piggy-bank-fill" />
+            </div>
+            <div className="presup-card__body">
+              <span className="presup-card__titulo">Fondo Ahorro</span>
+              <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(saldoAhorro)}</span>
+              <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                Generado: {fmt(totalGeneradoAhorro)} · Retirado: {fmt(totalRetiradoAhorro)}
+              </span>
+            </div>
           </div>
-          <div className="presup-card__body">
-            <span className="presup-card__titulo">Fondo Ahorro</span>
-            <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(saldoAhorro)}</span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
-              Generado: {fmt(totalGeneradoAhorro)} · Retirado: {fmt(totalRetiradoAhorro)}
-            </span>
+        )}
+        {Number(pFondo) > 0 && (
+          <div className="presup-card" style={{ borderTop: "3px solid #0891b2" }}>
+            <div className="presup-card__icono" style={{ color: "#0891b2" }}>
+              <i className="bi bi-shield-check-fill" />
+            </div>
+            <div className="presup-card__body">
+              <span className="presup-card__titulo">Fondo Emergencia</span>
+              <span className="presup-card__valor" style={{ color: "#0891b2" }}>{fmt(saldoFondoEmergencia)}</span>
+              <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                Generado: {fmt(totalGeneradoFondo)} · Retirado: {fmt(totalRetiradoFondo)}
+              </span>
+            </div>
           </div>
-        </div>
-        {/* Emergencia */}
-        <div className="presup-card" style={{ borderTop: "3px solid #0891b2" }}>
-          <div className="presup-card__icono" style={{ color: "#0891b2" }}>
-            <i className="bi bi-shield-check-fill" />
-          </div>
-          <div className="presup-card__body">
-            <span className="presup-card__titulo">Fondo Emergencia</span>
-            <span className="presup-card__valor" style={{ color: "#0891b2" }}>{fmt(saldoFondoEmergencia)}</span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
-              Generado: {fmt(totalGeneradoFondo)} · Retirado: {fmt(totalRetiradoFondo)}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Botón para registrar uso */}
       <div className="mb-3">
         <button
           className="btn btn-sm"
@@ -125,7 +135,6 @@ const PanelFondos = ({ balance, onRegistrar }) => {
         </div>
       )}
 
-      {/* Historial de movimientos */}
       <p className="section-title">
         <i className="bi bi-clock-history me-1" />Historial de retiros
       </p>

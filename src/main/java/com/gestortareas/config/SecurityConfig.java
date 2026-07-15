@@ -9,13 +9,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
@@ -23,18 +20,17 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("${spring.security.user.name}")
-    private String username;
-
-    @Value("${spring.security.user.password}")
-    private String password;
-
-    // Activar en application-prod.properties cuando SSL esté configurado
     @Value("${security.require-https:false}")
     private boolean requireHttps;
 
     @Value("${security.hsts.enabled:false}")
     private boolean hstsEnabled;
+
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,36 +38,23 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.builder()
-                .username(username)
-                .password(passwordEncoder().encode(password))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // CSRF deshabilitado intencionalmente: API 100% stateless (sin cookies de sesión).
-        // Si en el futuro se agregan cookies de sesión, REACTIVAR CSRF obligatoriamente.
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/webauthn/challenge").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .httpBasic(Customizer.withDefaults())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> {
                 headers
                     .frameOptions(frame -> frame.deny())
                     .contentSecurityPolicy(csp -> csp.policyDirectives(
-                        "default-src 'self'; " +
-                        "frame-ancestors 'none'; " +
-                        "object-src 'none';"
+                        "default-src 'self'; frame-ancestors 'none'; object-src 'none';"
                     ))
                     .referrerPolicy(ref -> ref.policy(
                         ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN

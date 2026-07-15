@@ -26,6 +26,9 @@ public class Tarea {
 
     private boolean realizado;
 
+    @Column(name = "usuario_id")
+    private Long usuarioId;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -46,4 +49,7 @@ public class Tarea {
 
     public boolean isRealizado() { return realizado; }
     public void setRealizado(boolean realizado) { this.realizado = realizado; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 }
