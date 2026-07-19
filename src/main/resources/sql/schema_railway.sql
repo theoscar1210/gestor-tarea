@@ -1,23 +1,8 @@
 -- ============================================================
 -- SCHEMA COMPLETO — FIN TASK / Gestor de Tareas
--- Idempotente: seguro ejecutar en BD vacía O existente
--- Railway MySQL 8.x
+-- Idempotente — sin DELIMITER, compatible con Railway Query panel
+-- MySQL 8.x
 -- ============================================================
-
--- Procedimiento auxiliar: agrega columna solo si no existe
-DROP PROCEDURE IF EXISTS add_col;
-DELIMITER $$
-CREATE PROCEDURE add_col(IN tbl VARCHAR(100), IN col VARCHAR(100), IN def TEXT)
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = tbl AND COLUMN_NAME = col
-  ) THEN
-    SET @s = CONCAT('ALTER TABLE `', tbl, '` ADD COLUMN `', col, '` ', def);
-    PREPARE st FROM @s; EXECUTE st; DEALLOCATE PREPARE st;
-  END IF;
-END$$
-DELIMITER ;
 
 -- ── 1. Usuarios ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS usuario (
@@ -135,17 +120,16 @@ CREATE TABLE IF NOT EXISTS push_subscription (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- ── Migraciones de columnas (idempotente) ────────────────────
-CALL add_col('tarea',               'usuario_id',                   'BIGINT');
-CALL add_col('lista_mercado',       'usuario_id',                   'BIGINT');
-CALL add_col('obligaciones',        'usuario_id',                   'BIGINT');
-CALL add_col('presupuesto_mensual', 'usuario_id',                   'BIGINT');
-CALL add_col('presupuesto_mensual', 'porcentaje_ahorro',            'DECIMAL(5,2) DEFAULT 10.00');
-CALL add_col('presupuesto_mensual', 'porcentaje_fondo_emergencia',  'DECIMAL(5,2) DEFAULT 5.00');
-CALL add_col('ingreso',             'usuario_id',                   'BIGINT');
-CALL add_col('movimiento_fondo',    'usuario_id',                   'BIGINT');
+-- ── Migraciones: agregar columnas a tablas que ya existían ───
+-- IF NOT EXISTS soportado desde MySQL 8.0.3
+ALTER TABLE tarea               ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
+ALTER TABLE lista_mercado       ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
+ALTER TABLE obligaciones        ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
+ALTER TABLE presupuesto_mensual ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
+ALTER TABLE presupuesto_mensual ADD COLUMN IF NOT EXISTS porcentaje_ahorro           DECIMAL(5,2) DEFAULT 10.00;
+ALTER TABLE presupuesto_mensual ADD COLUMN IF NOT EXISTS porcentaje_fondo_emergencia DECIMAL(5,2) DEFAULT 5.00;
+ALTER TABLE ingreso             ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
+ALTER TABLE movimiento_fondo    ADD COLUMN IF NOT EXISTS usuario_id                  BIGINT;
 
-DROP PROCEDURE IF EXISTS add_col;
-
--- Nota: las categorías las seed Spring Boot en el primer arranque
--- (PresupuestoService @PostConstruct) solo si categoria_gasto está vacía.
+-- Nota: Spring Boot seed las categorías en el primer arranque
+-- (PresupuestoService @PostConstruct) si categoria_gasto está vacía.
