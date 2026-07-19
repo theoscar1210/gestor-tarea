@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "java -Xmx256m -Xms128m -jar target/GestorTareasSprint-0.0.1-SNAPSHOT.jar"
+healthcheckPath = "/api/auth/login"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
