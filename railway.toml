@@ -3,8 +3,8 @@ builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
-startCommand = "java -Xmx256m -Xms128m -jar target/GestorTareasSprint-0.0.1-SNAPSHOT.jar"
-healthcheckPath = "/api/auth/login"
-healthcheckTimeout = 100
+startCommand = "java -Xmx384m -Xms128m -XX:+UseContainerSupport -jar target/GestorTareasSprint-0.0.1-SNAPSHOT.jar"
+healthcheckPath = "/health"
+healthcheckTimeout = 180
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
