@@ -26,6 +26,7 @@ const LoginPage = () => {
   const [usuario,        setUsuario]        = useState("");
   const [password,       setPassword]       = useState("");
   const [confirmPass,    setConfirmPass]    = useState("");
+  const [email,          setEmail]          = useState("");
   const [error,          setError]          = useState("");
   const [cargando,       setCargando]       = useState(false);
   const [tieneHuella,    setTieneHuella]    = useState(false);
@@ -69,7 +70,7 @@ const LoginPage = () => {
       return;
     }
     setCargando(true);
-    const resultado = await registro(usuario, password);
+    const resultado = await registro(usuario, password, email);
     if (!resultado.success) {
       setError(resultado.mensaje);
     } else {
@@ -317,7 +318,7 @@ const LoginPage = () => {
               ¿No tienes cuenta?{" "}
               <button
                 type="button"
-                onClick={() => { setModoRegistro(true); setError(""); setUsuario(""); setPassword(""); }}
+                onClick={() => { setModoRegistro(true); setError(""); setUsuario(""); setPassword(""); setEmail(""); }}
                 style={{ background: "none", border: "none", color: "#21A1A1", fontWeight: 600, cursor: "pointer", padding: 0, fontSize: "inherit" }}
               >
                 Crear cuenta
@@ -341,6 +342,21 @@ const LoginPage = () => {
                   autoFocus
                   placeholder="Elige un nombre de usuario"
                 />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Correo electrónico</label>
+                <input
+                  className="form-control"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="tucorreo@ejemplo.com"
+                />
+                <div className="form-text" style={{ fontSize: "0.75rem", color: "rgba(10,22,40,0.45)" }}>
+                  Lo usarás para recuperar tu contraseña si la olvidas.
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label">Contraseña</label>
@@ -393,7 +409,7 @@ const LoginPage = () => {
               ¿Ya tienes cuenta?{" "}
               <button
                 type="button"
-                onClick={() => { setModoRegistro(false); setError(""); setUsuario(""); setPassword(""); setConfirmPass(""); }}
+                onClick={() => { setModoRegistro(false); setError(""); setUsuario(""); setPassword(""); setConfirmPass(""); setEmail(""); }}
                 style={{ background: "none", border: "none", color: "#21A1A1", fontWeight: 600, cursor: "pointer", padding: 0, fontSize: "inherit" }}
               >
                 Iniciar sesión

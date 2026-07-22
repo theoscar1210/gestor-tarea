@@ -34,21 +34,18 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const registro = useCallback(async (usuario, password) => {
+  const registro = useCallback(async (usuario, password, email) => {
     try {
-      const { data } = await apiClient.post("/api/auth/registro", { username: usuario, password });
+      const { data } = await apiClient.post("/api/auth/registro", { username: usuario, password, email });
       setAuthToken(data.token);
       setIsAuthenticated(true);
       setUsername(data.username);
       return { success: true, token: data.token, username: data.username };
     } catch (err) {
       clearAuthToken();
-      const msg = err.response?.data?.message;
-      if (err.response?.status === 400) {
-        return { success: false, mensaje: msg || "Datos inválidos. La contraseña debe tener al menos 6 caracteres." };
-      }
-      if (err.response?.status === 409) {
-        return { success: false, mensaje: "Ese nombre de usuario ya está en uso." };
+      const msg = err.response?.data?.error;
+      if (err.response?.status === 400 || err.response?.status === 409) {
+        return { success: false, mensaje: msg || "Datos inválidos. Revisa los campos e intenta de nuevo." };
       }
       return { success: false, mensaje: "No se pudo crear la cuenta." };
     }

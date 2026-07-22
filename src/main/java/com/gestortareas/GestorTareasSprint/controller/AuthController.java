@@ -53,6 +53,13 @@ public class AuthController {
                     .body(Map.of("error", "Usuario mínimo 1 carácter y contraseña mínimo 6"));
         }
 
+        String email = req.getEmail();
+        if (email == null || email.isBlank() || !email.contains("@") || !email.contains(".")) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Ingresa un correo electrónico válido"));
+        }
+        email = email.toLowerCase().trim();
+
         String username = req.getUsername().toLowerCase().trim();
 
         if (usuarioRepo.existsByUsername(username)) {
@@ -60,10 +67,15 @@ public class AuthController {
                     .body(Map.of("error", "El nombre de usuario ya está en uso"));
         }
 
+        if (usuarioRepo.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Ese correo ya está registrado en otra cuenta"));
+        }
+
         Usuario u = new Usuario();
         u.setUsername(username);
         u.setPassword(passwordEncoder.encode(req.getPassword()));
-        u.setEmail(req.getEmail());
+        u.setEmail(email);
         usuarioRepo.save(u);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
