@@ -2,6 +2,7 @@ package com.gestortareas.GestorTareasSprint.repository;
 
 import com.gestortareas.GestorTareasSprint.model.HistorialPago;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +19,8 @@ public interface HistorialPagoRepository extends JpaRepository<HistorialPago, Lo
            "AND h.obligacion.usuarioId = :uid")
     List<HistorialPago> findByMesAnoAndPagadoTrueAndUsuarioId(
             @Param("mesAno") String mesAno, @Param("uid") Long uid);
+
+    @Modifying
+    @Query("DELETE FROM HistorialPago h WHERE h.obligacion.usuarioId = :uid")
+    void deleteByObligacionUsuarioId(@Param("uid") Long uid);
 }

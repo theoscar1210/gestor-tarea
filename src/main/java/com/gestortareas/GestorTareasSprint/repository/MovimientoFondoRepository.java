@@ -24,4 +24,8 @@ public interface MovimientoFondoRepository extends JpaRepository<MovimientoFondo
     @Modifying
     @Query("UPDATE MovimientoFondo m SET m.usuarioId = :userId WHERE m.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM MovimientoFondo m WHERE m.usuarioId = :uid")
+    void deleteByUsuarioId(@Param("uid") Long uid);
 }

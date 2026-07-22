@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import { obtenerLista } from "../features/mercado/api/mercadoAPI";
 import { obtenerProximas } from "../features/pagos/api/pagosAPI";
 import { obtenerActual } from "../features/presupuesto/api/presupuestoAPI";
 import { obtenerTareas } from "../features/tasks/api/tasksApi";
+import apiClient from "../shared/api/axiosConfig";
 
 const fmt = (n) =>
   Number(n || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -38,6 +40,59 @@ const DashboardPage = () => {
     obtenerLista().then(setMercado).catch(() => {});
     obtenerActual().then(setPresupuesto).catch(() => {});
   }, []);
+
+  const handleResetearDatos = async () => {
+    const { value: confirmText } = await Swal.fire({
+      title: "⚠️ ¿Borrar todos los datos?",
+      html: `
+        <p style="color:#dc2626;font-weight:600;margin-bottom:0.75rem;">
+          Esta acción es <u>irreversible</u>. Se eliminarán:
+        </p>
+        <ul style="text-align:left;font-size:0.88rem;color:#374151;line-height:1.8;margin-bottom:1rem;">
+          <li>Todas las tareas</li>
+          <li>Lista de mercado completa</li>
+          <li>Obligaciones y pagos</li>
+          <li>Presupuesto, gastos e ingresos</li>
+          <li>Historial de fondos y retiros</li>
+        </ul>
+        <p style="font-size:0.85rem;margin-bottom:0.5rem;">
+          Escribe <strong>BORRAR</strong> para confirmar:
+        </p>
+        <input id="swal-confirm-input" class="swal2-input" placeholder="BORRAR" style="margin:0;width:100%;box-sizing:border-box;" />
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, borrar todo",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById("swal-confirm-input")?.value || "";
+        if (val !== "BORRAR") {
+          Swal.showValidationMessage("Debes escribir exactamente: BORRAR");
+          return false;
+        }
+        return true;
+      },
+    });
+
+    if (!confirmText) return;
+
+    try {
+      await apiClient.delete("/api/datos/reset");
+      await Swal.fire({
+        icon: "success",
+        title: "Datos eliminados",
+        text: "Todos tus datos fueron borrados. La página se recargará.",
+        showConfirmButton: false,
+        timer: 2200,
+      });
+      window.location.reload();
+    } catch {
+      Swal.fire("Error", "No se pudieron eliminar los datos. Intenta de nuevo.", "error");
+    }
+  };
 
   const tareasPendientes = tareas.filter((t) => !t.realizado);
   const hoy              = new Date().toISOString().split("T")[0];
@@ -206,6 +261,48 @@ const DashboardPage = () => {
             </ul>
           </>
         )}
+        {/* Zona de peligro */}
+        <div style={{
+          marginTop: "2rem",
+          paddingTop: "1.25rem",
+          borderTop: "1px dashed rgba(220,38,38,0.25)",
+        }}>
+          <p style={{
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            color: "#dc2626",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "0.6rem",
+          }}>
+            <i className="bi bi-exclamation-octagon me-1" />Zona de peligro
+          </p>
+          <button
+            onClick={handleResetearDatos}
+            style={{
+              background: "transparent",
+              border: "1px solid #dc2626",
+              color: "#dc2626",
+              borderRadius: "8px",
+              padding: "0.5rem 1rem",
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          >
+            <i className="bi bi-trash3" />
+            Limpiar todos los datos
+          </button>
+          <p style={{ fontSize: "0.72rem", color: "rgba(10,22,40,0.4)", marginTop: "0.4rem" }}>
+            Borra tareas, mercado, pagos, presupuesto y fondos. Acción irreversible.
+          </p>
+        </div>
       </div>
     </div>
   );

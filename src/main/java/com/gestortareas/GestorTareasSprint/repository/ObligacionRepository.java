@@ -26,4 +26,8 @@ public interface ObligacionRepository extends JpaRepository<Obligacion, Long> {
     @Modifying
     @Query("UPDATE Obligacion o SET o.usuarioId = :userId WHERE o.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM Obligacion o WHERE o.usuarioId = :uid")
+    void deleteByUsuarioId(@Param("uid") Long uid);
 }

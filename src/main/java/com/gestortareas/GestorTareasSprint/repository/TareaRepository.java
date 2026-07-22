@@ -31,4 +31,8 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
     @Modifying
     @Query("UPDATE Tarea t SET t.usuarioId = :userId WHERE t.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM Tarea t WHERE t.usuarioId = :uid")
+    void deleteByUsuarioId(@Param("uid") Long uid);
 }

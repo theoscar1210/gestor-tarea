@@ -22,4 +22,8 @@ public interface ListaMercadoRepository extends JpaRepository<ListaMercado, Long
     @Modifying
     @Query("UPDATE ListaMercado l SET l.usuarioId = :userId WHERE l.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("DELETE FROM ListaMercado l WHERE l.usuarioId = :uid")
+    void deleteByUsuarioId(@Param("uid") Long uid);
 }
