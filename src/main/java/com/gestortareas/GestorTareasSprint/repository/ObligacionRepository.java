@@ -13,6 +13,8 @@ public interface ObligacionRepository extends JpaRepository<Obligacion, Long> {
 
     List<Obligacion> findByActivoTrue();
 
+    List<Obligacion> findByUsuarioId(Long usuarioId);
+
     List<Obligacion> findByActivoTrueAndUsuarioId(Long usuarioId);
 
     Optional<Obligacion> findByIdAndUsuarioId(Long id, Long usuarioId);

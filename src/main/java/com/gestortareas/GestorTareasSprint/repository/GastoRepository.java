@@ -12,6 +12,6 @@ public interface GastoRepository extends JpaRepository<Gasto, Long> {
     List<Gasto> findByPresupuestoId(Long presupuestoId);
 
     @Modifying
-    @Query("DELETE FROM Gasto g WHERE g.presupuesto.usuarioId = :uid")
-    void deleteByPresupuestoUsuarioId(@Param("uid") Long uid);
+    @Query("DELETE FROM Gasto g WHERE g.presupuesto.id IN :ids")
+    void deleteByPresupuestoIdIn(@Param("ids") java.util.List<Long> ids);
 }
