@@ -89,8 +89,9 @@ const DashboardPage = () => {
         timer: 2200,
       });
       window.location.reload();
-    } catch {
-      Swal.fire("Error", "No se pudieron eliminar los datos. Intenta de nuevo.", "error");
+    } catch (err) {
+      const detalle = err.response?.data?.error || err.message || "Error desconocido";
+      Swal.fire("Error al borrar datos", detalle, "error");
     }
   };
 

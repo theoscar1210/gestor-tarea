@@ -11,7 +11,7 @@ import java.util.List;
 public interface GastoRepository extends JpaRepository<Gasto, Long> {
     List<Gasto> findByPresupuestoId(Long presupuestoId);
 
-    @Modifying
-    @Query("DELETE FROM Gasto g WHERE g.presupuesto.id IN :ids")
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM gasto WHERE presupuesto_id IN :ids", nativeQuery = true)
     void deleteByPresupuestoIdIn(@Param("ids") java.util.List<Long> ids);
 }

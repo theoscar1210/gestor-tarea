@@ -20,7 +20,7 @@ public interface HistorialPagoRepository extends JpaRepository<HistorialPago, Lo
     List<HistorialPago> findByMesAnoAndPagadoTrueAndUsuarioId(
             @Param("mesAno") String mesAno, @Param("uid") Long uid);
 
-    @Modifying
-    @Query("DELETE FROM HistorialPago h WHERE h.obligacion.id IN :ids")
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM historial_pagos WHERE obligacion_id IN :ids", nativeQuery = true)
     void deleteByObligacionIdIn(@Param("ids") java.util.List<Long> ids);
 }

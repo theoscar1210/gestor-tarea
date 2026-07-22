@@ -32,7 +32,7 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
     @Query("UPDATE Tarea t SET t.usuarioId = :userId WHERE t.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
 
-    @Modifying
-    @Query("DELETE FROM Tarea t WHERE t.usuarioId = :uid")
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM tarea WHERE usuario_id = :uid", nativeQuery = true)
     void deleteByUsuarioId(@Param("uid") Long uid);
 }

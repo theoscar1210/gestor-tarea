@@ -28,7 +28,7 @@ public interface IngresoRepository extends JpaRepository<Ingreso, Long> {
     @Query("UPDATE Ingreso i SET i.usuarioId = :userId WHERE i.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
 
-    @Modifying
-    @Query("DELETE FROM Ingreso i WHERE i.usuarioId = :uid")
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM ingreso WHERE usuario_id = :uid", nativeQuery = true)
     void deleteByUsuarioId(@Param("uid") Long uid);
 }

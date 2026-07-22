@@ -23,7 +23,7 @@ public interface PresupuestoMensualRepository extends JpaRepository<PresupuestoM
     @Query("UPDATE PresupuestoMensual p SET p.usuarioId = :userId WHERE p.usuarioId IS NULL")
     void migrarNuloAAdmin(@Param("userId") Long userId);
 
-    @Modifying
-    @Query("DELETE FROM PresupuestoMensual p WHERE p.usuarioId = :uid")
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM presupuesto_mensual WHERE usuario_id = :uid", nativeQuery = true)
     void deleteByUsuarioId(@Param("uid") Long uid);
 }
