@@ -4,12 +4,14 @@ import { useAuth } from "../../context/AuthContext";
 import { obtenerTareas } from "../../features/tasks/api/tasksApi";
 import { getDueNotifications } from "../../features/notifications/model/getDueNotifications";
 import NotificationList from "../../features/notifications/ui/NotificationList";
+import CambiarPasswordModal from "../../features/auth/ui/CambiarPasswordModal";
 
 const Navbar = () => {
   const { username, logout }                    = useAuth();
   const [notificaciones, setNotificaciones]     = useState([]);
   const [showNotif,      setShowNotif]          = useState(false);
   const [showUser,       setShowUser]           = useState(false);
+  const [showCambiarPass, setShowCambiarPass]   = useState(false);
   const notifRef = useRef(null);
   const userRef  = useRef(null);
 
@@ -29,6 +31,7 @@ const Navbar = () => {
   }, []);
 
   return (
+    <>
     <nav className="app-navbar">
       <NavLink to="/" className="app-navbar__brand" style={{ textDecoration: "none" }}>
         <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "0.1em", lineHeight: 1 }}>
@@ -116,6 +119,15 @@ const Navbar = () => {
                 </div>
               </div>
               <hr style={{ margin: "0.4rem 0", borderColor: "rgba(255,255,255,0.1)" }} />
+              <button
+                className="user-dropdown__logout"
+                style={{ color: "rgba(255,255,255,0.75)" }}
+                onClick={() => { setShowUser(false); setShowCambiarPass(true); }}
+              >
+                <i className="bi bi-shield-lock"></i>
+                Cambiar contraseña
+              </button>
+              <hr style={{ margin: "0.4rem 0", borderColor: "rgba(255,255,255,0.1)" }} />
               <button className="user-dropdown__logout" onClick={logout}>
                 <i className="bi bi-box-arrow-right"></i>
                 Cerrar sesión
@@ -125,6 +137,10 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+      {showCambiarPass && (
+        <CambiarPasswordModal onCerrar={() => setShowCambiarPass(false)} />
+      )}
+    </>
   );
 };
 

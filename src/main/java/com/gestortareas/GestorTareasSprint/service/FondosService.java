@@ -95,9 +95,7 @@ public class FondosService {
     public BigDecimal ingresosEfectivos(PresupuestoMensual p, Long userId) {
         BigDecimal explicitos = ingresoRepo.findByMesAnoAndUsuarioId(p.getMesAno(), userId).stream()
                 .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return explicitos.compareTo(BigDecimal.ZERO) > 0
-                ? explicitos
-                : safe(p.getSalarioTotal(), BigDecimal.ZERO);
+        return safe(p.getSalarioTotal(), BigDecimal.ZERO).add(explicitos);
     }
 
     private BigDecimal safe(BigDecimal val, BigDecimal fallback) {

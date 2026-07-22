@@ -14,7 +14,7 @@ const tarjeta = (icono, titulo, valor, color, subtitulo) => (
   </div>
 );
 
-const ResumenPresupuesto = ({ resumen, totalIngresos }) => {
+const ResumenPresupuesto = ({ resumen, totalIngresos, balance }) => {
   if (!resumen) return null;
 
   const {
@@ -78,6 +78,36 @@ const ResumenPresupuesto = ({ resumen, totalIngresos }) => {
           </div>
         </div>
       </div>
+
+      {/* Fila 3: Saldos acumulados de fondos */}
+      {balance && (balance.saldoAhorro !== undefined || balance.saldoFondoEmergencia !== undefined) && (
+        <div className="presup-resumen mt-2">
+          {pAhorro > 0 && (
+            <div className="presup-card" style={{ borderTop: "3px solid #059669" }}>
+              <div className="presup-card__icono" style={{ color: "#059669" }}>
+                <i className="bi bi-piggy-bank-fill"></i>
+              </div>
+              <div className="presup-card__body">
+                <span className="presup-card__titulo">Ahorro acumulado</span>
+                <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(balance.saldoAhorro)}</span>
+                <span style={{ fontSize: "0.7rem", color: "rgba(0,0,0,0.4)", marginTop: 2 }}>Saldo total de todos los meses</span>
+              </div>
+            </div>
+          )}
+          {pFondo > 0 && (
+            <div className="presup-card" style={{ borderTop: "3px solid #0891b2" }}>
+              <div className="presup-card__icono" style={{ color: "#0891b2" }}>
+                <i className="bi bi-shield-check-fill"></i>
+              </div>
+              <div className="presup-card__body">
+                <span className="presup-card__titulo">Fondo emergencia acumulado</span>
+                <span className="presup-card__valor" style={{ color: "#0891b2" }}>{fmt(balance.saldoFondoEmergencia)}</span>
+                <span style={{ fontSize: "0.7rem", color: "rgba(0,0,0,0.4)", marginTop: 2 }}>Saldo total de todos los meses</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Alerta si el saldo es negativo */}
       {saldo < 0 && (

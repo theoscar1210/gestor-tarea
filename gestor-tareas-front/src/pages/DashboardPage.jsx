@@ -45,7 +45,7 @@ const DashboardPage = () => {
   const mercadoPendiente = mercado.filter((i) => !i.comprado);
 
   const balanceLabel  = presupuesto ? "Disponible este mes" : "Sin presupuesto activo";
-  const balanceAmount = presupuesto ? fmtShort(presupuesto.disponible) : "$0";
+  const balanceAmount = presupuesto ? fmt(presupuesto.disponible) : "$0";
   const balanceSub    = presupuesto
     ? `Ejecutado: ${Number(presupuesto.porcentajeEjec || 0).toFixed(0)}%`
     : "Inicia tu presupuesto en Presupuesto";

@@ -116,7 +116,7 @@ const PresupuestoPage = () => {
 
       {tab === "resumen" && (
         <>
-          <ResumenPresupuesto resumen={resumen} totalIngresos={totalMes} />
+          <ResumenPresupuesto resumen={resumen} totalIngresos={totalMes} balance={balance} />
           <ConfiguracionAhorro
             resumen={resumen}
             onGuardar={(pA, pF) => guardarPorcentajes(resumen.presupuesto?.mesAno, pA, pF, recargar)}

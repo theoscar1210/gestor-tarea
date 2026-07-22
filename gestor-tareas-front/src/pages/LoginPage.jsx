@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import apiClient from "../shared/api/axiosConfig";
+import RecuperarPasswordModal from "../features/auth/ui/RecuperarPasswordModal";
 
 const TOKEN_KEY   = "fintask_auth_token";
 const CRED_KEY    = "fintask_webauthn_id";
@@ -29,8 +30,9 @@ const LoginPage = () => {
   const [cargando,       setCargando]       = useState(false);
   const [tieneHuella,    setTieneHuella]    = useState(false);
   const [cargandoHuella, setCargandoHuella] = useState(false);
-  const [mostrarGuardar, setMostrarGuardar] = useState(false);
-  const [modoRegistro,   setModoRegistro]   = useState(false);
+  const [mostrarGuardar,  setMostrarGuardar]  = useState(false);
+  const [modoRegistro,    setModoRegistro]    = useState(false);
+  const [mostrarRecuperar, setMostrarRecuperar] = useState(false);
 
   useEffect(() => {
     if (SOPORTE_WA && localStorage.getItem(CRED_KEY) && localStorage.getItem(TOKEN_KEY)) {
@@ -162,6 +164,8 @@ const LoginPage = () => {
   };
 
   return (
+    <>
+    {mostrarRecuperar && <RecuperarPasswordModal onCerrar={() => setMostrarRecuperar(false)} />}
     <div className="login-wrapper">
       <div className="login-card">
         <img
@@ -299,7 +303,17 @@ const LoginPage = () => {
               </div>
             )}
 
-            <p style={{ textAlign: "center", marginTop: "1.2rem", fontSize: "0.82rem", color: "rgba(10,22,40,0.45)" }}>
+            <p style={{ textAlign: "center", marginTop: "0.75rem", fontSize: "0.82rem" }}>
+              <button
+                type="button"
+                onClick={() => setMostrarRecuperar(true)}
+                style={{ background: "none", border: "none", color: "rgba(10,22,40,0.45)", cursor: "pointer", padding: 0, fontSize: "inherit", textDecoration: "underline" }}
+              >
+                ¿Olvidé mi contraseña?
+              </button>
+            </p>
+
+            <p style={{ textAlign: "center", marginTop: "0.5rem", fontSize: "0.82rem", color: "rgba(10,22,40,0.45)" }}>
               ¿No tienes cuenta?{" "}
               <button
                 type="button"
@@ -389,6 +403,7 @@ const LoginPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

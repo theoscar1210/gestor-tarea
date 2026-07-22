@@ -38,9 +38,16 @@ const PanelFondos = ({ balance, onRegistrar, pAhorro = 10, pFondo = 5 }) => {
   const { saldoAhorro, saldoFondoEmergencia, totalGeneradoAhorro, totalGeneradoFondo,
           totalRetiradoAhorro, totalRetiradoFondo, movimientos = [] } = balance;
 
+  const saldoDisponible = tipo === "AHORRO_RETIRO"
+    ? Number(saldoAhorro || 0)
+    : Number(saldoFondoEmergencia || 0);
+
+  const montoNum = Number(monto) || 0;
+  const excedeSaldo = montoNum > 0 && montoNum > saldoDisponible;
+
   const handleRegistrar = async () => {
-    if (!monto || Number(monto) <= 0 || !desc.trim()) return;
-    await onRegistrar({ tipo, monto: Number(monto), descripcion: desc, mesAno: MES_ACTUAL });
+    if (!monto || montoNum <= 0 || !desc.trim() || excedeSaldo) return;
+    await onRegistrar({ tipo, monto: montoNum, descripcion: desc, mesAno: MES_ACTUAL });
     setMonto(""); setDesc(""); setAbierto(false);
   };
 
@@ -113,9 +120,20 @@ const PanelFondos = ({ balance, onRegistrar, pAhorro = 10, pFondo = 5 }) => {
               </div>
             </div>
             <div className="col-12 col-sm-4">
-              <label className="form-label">Monto retirado</label>
-              <input type="number" className="form-control" placeholder="Ej: 200000"
+              <label className="form-label">
+                Monto retirado
+                <span style={{ fontWeight: 400, fontSize: "0.75rem", color: "#6b7280", marginLeft: 6 }}>
+                  (disponible: {fmt(saldoDisponible)})
+                </span>
+              </label>
+              <input type="number" className={`form-control ${excedeSaldo ? "is-invalid" : ""}`}
+                placeholder="Ej: 200000"
                 value={monto} onChange={e => setMonto(e.target.value)} min="1" />
+              {excedeSaldo && (
+                <div className="invalid-feedback">
+                  Supera el saldo disponible ({fmt(saldoDisponible)})
+                </div>
+              )}
             </div>
             <div className="col-12 col-sm-8">
               <label className="form-label">Descripción / motivo</label>
@@ -126,7 +144,7 @@ const PanelFondos = ({ balance, onRegistrar, pAhorro = 10, pFondo = 5 }) => {
               <button
                 className="btn btn-add btn-sm"
                 onClick={handleRegistrar}
-                disabled={!monto || !desc.trim()}
+                disabled={!monto || !desc.trim() || excedeSaldo}
               >
                 <i className="bi bi-check2 me-1" />Registrar movimiento
               </button>
