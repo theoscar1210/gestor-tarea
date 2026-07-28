@@ -14,14 +14,18 @@ public class ResetDatosService {
 
     private static final Logger log = LoggerFactory.getLogger(ResetDatosService.class);
 
-    private final GastoRepository              gastoRepo;
-    private final HistorialPagoRepository      historialPagoRepo;
-    private final IngresoRepository            ingresoRepo;
-    private final MovimientoFondoRepository    movimientoRepo;
-    private final PresupuestoMensualRepository presupuestoRepo;
-    private final ObligacionRepository         obligacionRepo;
-    private final TareaRepository              tareaRepo;
-    private final ListaMercadoRepository       mercadoRepo;
+    private final GastoRepository                 gastoRepo;
+    private final HistorialPagoRepository         historialPagoRepo;
+    private final IngresoRepository               ingresoRepo;
+    private final MovimientoFondoRepository       movimientoRepo;
+    private final PresupuestoMensualRepository    presupuestoRepo;
+    private final ObligacionRepository            obligacionRepo;
+    private final TareaRepository                 tareaRepo;
+    private final ListaMercadoRepository          mercadoRepo;
+    private final SubTareaRepository              subTareaRepo;
+    private final ContactoRepository              contactoRepo;
+    private final PlantillaRutinaRepository       plantillaRepo;
+    private final UbicacionRecordatorioRepository ubicacionRepo;
 
     public ResetDatosService(GastoRepository gastoRepo,
                              HistorialPagoRepository historialPagoRepo,
@@ -30,15 +34,23 @@ public class ResetDatosService {
                              PresupuestoMensualRepository presupuestoRepo,
                              ObligacionRepository obligacionRepo,
                              TareaRepository tareaRepo,
-                             ListaMercadoRepository mercadoRepo) {
-        this.gastoRepo        = gastoRepo;
+                             ListaMercadoRepository mercadoRepo,
+                             SubTareaRepository subTareaRepo,
+                             ContactoRepository contactoRepo,
+                             PlantillaRutinaRepository plantillaRepo,
+                             UbicacionRecordatorioRepository ubicacionRepo) {
+        this.gastoRepo         = gastoRepo;
         this.historialPagoRepo = historialPagoRepo;
-        this.ingresoRepo      = ingresoRepo;
-        this.movimientoRepo   = movimientoRepo;
-        this.presupuestoRepo  = presupuestoRepo;
-        this.obligacionRepo   = obligacionRepo;
-        this.tareaRepo        = tareaRepo;
-        this.mercadoRepo      = mercadoRepo;
+        this.ingresoRepo       = ingresoRepo;
+        this.movimientoRepo    = movimientoRepo;
+        this.presupuestoRepo   = presupuestoRepo;
+        this.obligacionRepo    = obligacionRepo;
+        this.tareaRepo         = tareaRepo;
+        this.mercadoRepo       = mercadoRepo;
+        this.subTareaRepo      = subTareaRepo;
+        this.contactoRepo      = contactoRepo;
+        this.plantillaRepo     = plantillaRepo;
+        this.ubicacionRepo     = ubicacionRepo;
     }
 
     @Transactional
@@ -46,27 +58,29 @@ public class ResetDatosService {
         Long uid = SecurityUtils.getCurrentUserId();
         log.warn("[Reset] Usuario {} solicitó borrado completo de datos", uid);
 
-        // Paso 1: obtener IDs de presupuestos del usuario → borrar gastos hijos
+        // Gastos hijos de presupuestos
         List<Long> presupuestoIds = presupuestoRepo.findByUsuarioIdOrderByMesAnoDesc(uid)
                 .stream().map(p -> p.getId()).toList();
-        if (!presupuestoIds.isEmpty()) {
-            gastoRepo.deleteByPresupuestoIdIn(presupuestoIds);
-        }
+        if (!presupuestoIds.isEmpty()) gastoRepo.deleteByPresupuestoIdIn(presupuestoIds);
 
-        // Paso 2: obtener IDs de obligaciones del usuario → borrar historial_pagos hijos
+        // Historial de pagos hijos de obligaciones
         List<Long> obligacionIds = obligacionRepo.findByUsuarioId(uid)
                 .stream().map(o -> o.getId()).toList();
-        if (!obligacionIds.isEmpty()) {
-            historialPagoRepo.deleteByObligacionIdIn(obligacionIds);
-        }
+        if (!obligacionIds.isEmpty()) historialPagoRepo.deleteByObligacionIdIn(obligacionIds);
 
-        // Paso 3: borrar tablas con columna usuario_id directa (sin FK pendiente)
+        // Subtareas (FK a tarea, borrar antes que tareas)
+        subTareaRepo.deleteByUsuarioId(uid);
+
+        // Tablas con usuario_id directo
         ingresoRepo.deleteByUsuarioId(uid);
         movimientoRepo.deleteByUsuarioId(uid);
         presupuestoRepo.deleteByUsuarioId(uid);
         obligacionRepo.deleteByUsuarioId(uid);
         tareaRepo.deleteByUsuarioId(uid);
         mercadoRepo.deleteByUsuarioId(uid);
+        contactoRepo.deleteByUsuarioId(uid);
+        plantillaRepo.deleteByUsuarioId(uid);
+        ubicacionRepo.deleteByUsuarioId(uid);
 
         log.warn("[Reset] Borrado completo finalizado para usuario {}", uid);
     }
