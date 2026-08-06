@@ -27,6 +27,10 @@ public class PresupuestoMensual {
     @Column(name = "usuario_id")
     private Long usuarioId;
 
+    /** Sobrante del mes anterior arrastrado a este mes (solo si positivo) */
+    @Column(name = "saldo_anterior")
+    private BigDecimal saldoAnterior = BigDecimal.ZERO;
+
     public PresupuestoMensual() {}
 
     public Long getId() { return id; }
@@ -49,4 +53,7 @@ public class PresupuestoMensual {
 
     public Long getUsuarioId() { return usuarioId; }
     public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
+
+    public BigDecimal getSaldoAnterior() { return saldoAnterior; }
+    public void setSaldoAnterior(BigDecimal saldoAnterior) { this.saldoAnterior = saldoAnterior; }
 }

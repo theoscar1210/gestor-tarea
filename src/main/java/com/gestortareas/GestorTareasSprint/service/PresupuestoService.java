@@ -86,6 +86,10 @@ public class PresupuestoService {
                 p.setPorcentajeAhorro(ant.getPorcentajeAhorro());
                 p.setPorcentajeFondoEmergencia(ant.getPorcentajeFondoEmergencia());
             }
+            // Arrastrar saldo sobrante del mes anterior (solo si positivo)
+            String prevMes = LocalDate.parse(mesAno + "-01").minusMonths(1).format(FORMATO_MES);
+            BigDecimal saldoPrev = calcularSaldoRealMes(prevMes, userId);
+            p.setSaldoAnterior(saldoPrev.compareTo(BigDecimal.ZERO) > 0 ? saldoPrev : BigDecimal.ZERO);
         }
         return presupuestoRepo.save(p);
     }
@@ -113,7 +117,11 @@ public class PresupuestoService {
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal montoFondo  = ingresosEfectivos.multiply(pFondo)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo);
+
+        // Saldo arrastrado del mes anterior (solo positivo, calculado al crear el presupuesto)
+        BigDecimal saldoAnt = p.getSaldoAnterior() != null ? p.getSaldoAnterior() : BigDecimal.ZERO;
+
+        BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo).add(saldoAnt);
         BigDecimal saldoReal = presupuestoDisponible.subtract(totalGastado);
 
         BigDecimal porcentajeEjec = presupuestoDisponible.compareTo(BigDecimal.ZERO) == 0
@@ -137,6 +145,7 @@ public class PresupuestoService {
         resumen.put("ingresosEfectivos",     ingresosEfectivos);
         resumen.put("montoAhorro",           montoAhorro);
         resumen.put("montoFondoEmergencia",  montoFondo);
+        resumen.put("saldoAnterior",         saldoAnt);
         resumen.put("presupuestoDisponible", presupuestoDisponible);
         resumen.put("saldoReal",             saldoReal);
         resumen.put("disponible",            saldoReal);
@@ -241,7 +250,9 @@ public class PresupuestoService {
 
             BigDecimal montoAhorro = ingresosEfectivos.multiply(pA).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             BigDecimal montoFondo  = ingresosEfectivos.multiply(pF).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo);
+            BigDecimal saldoAnt    = pOpt.map(p -> p.getSaldoAnterior() != null ? p.getSaldoAnterior() : BigDecimal.ZERO)
+                    .orElse(BigDecimal.ZERO);
+            BigDecimal presupuestoDisponible = ingresosEfectivos.subtract(montoAhorro).subtract(montoFondo).add(saldoAnt);
             BigDecimal saldoReal = presupuestoDisponible.subtract(totalGastos);
 
             Map<String, Object> row = new LinkedHashMap<>();
@@ -249,6 +260,7 @@ public class PresupuestoService {
             row.put("totalIngresos",         ingresosEfectivos);
             row.put("montoAhorro",           montoAhorro);
             row.put("montoFondoEmergencia",  montoFondo);
+            row.put("saldoAnterior",         saldoAnt);
             row.put("presupuestoDisponible", presupuestoDisponible);
             row.put("totalGastos",           totalGastos);
             row.put("saldo",                 ingresosEfectivos.subtract(totalGastos));
@@ -258,6 +270,34 @@ public class PresupuestoService {
             row.put("tieneIngresosDetallados", totalIngresos.compareTo(BigDecimal.ZERO) > 0);
             return row;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Calcula el saldoReal de un mes dado (incluye saldoAnterior ya almacenado en ese presupuesto).
+     * Devuelve ZERO si no existe presupuesto para ese mes.
+     */
+    private BigDecimal calcularSaldoRealMes(String mesAno, Long userId) {
+        Optional<PresupuestoMensual> pOpt = presupuestoRepo.findByMesAnoAndUsuarioId(mesAno, userId);
+        if (pOpt.isEmpty()) return BigDecimal.ZERO;
+        PresupuestoMensual p = pOpt.get();
+
+        BigDecimal totalIngresos = ingresoRepo.findByMesAnoAndUsuarioId(mesAno, userId).stream()
+                .map(Ingreso::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal salario = p.getSalarioTotal() != null ? p.getSalarioTotal() : BigDecimal.ZERO;
+        BigDecimal ingresos = salario.add(totalIngresos);
+
+        BigDecimal pA = p.getPorcentajeAhorro() != null ? p.getPorcentajeAhorro() : BigDecimal.TEN;
+        BigDecimal pF = p.getPorcentajeFondoEmergencia() != null ? p.getPorcentajeFondoEmergencia() : new BigDecimal("5.00");
+
+        BigDecimal ahorro = ingresos.multiply(pA).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal fondo  = ingresos.multiply(pF).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal saldoAnt = p.getSaldoAnterior() != null ? p.getSaldoAnterior() : BigDecimal.ZERO;
+        BigDecimal disponible = ingresos.subtract(ahorro).subtract(fondo).add(saldoAnt);
+
+        BigDecimal gastos = gastoRepo.findByPresupuestoId(p.getId()).stream()
+                .map(Gasto::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return disponible.subtract(gastos);
     }
 
     private BigDecimal proyectarAhorro(PresupuestoMensual p, List<Gasto> gastos) {

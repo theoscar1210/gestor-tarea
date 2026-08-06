@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { obtenerLista } from "../features/mercado/api/mercadoAPI";
 import { obtenerProximas } from "../features/pagos/api/pagosAPI";
-import { obtenerActual } from "../features/presupuesto/api/presupuestoAPI";
+import { obtenerActual, obtenerHistorial } from "../features/presupuesto/api/presupuestoAPI";
 import { obtenerTareas } from "../features/tasks/api/tasksApi";
 import apiClient from "../shared/api/axiosConfig";
 
@@ -33,12 +33,14 @@ const DashboardPage = () => {
   const [proximas,    setProximas]    = useState([]);
   const [mercado,     setMercado]     = useState([]);
   const [presupuesto, setPresupuesto] = useState(null);
+  const [historial,   setHistorial]   = useState([]);
 
   useEffect(() => {
     obtenerTareas().then(setTareas).catch(() => {});
     obtenerProximas().then(setProximas).catch(() => {});
     obtenerLista().then(setMercado).catch(() => {});
     obtenerActual().then(setPresupuesto).catch(() => {});
+    obtenerHistorial(24).then(setHistorial).catch(() => {});
   }, []);
 
   const handleResetearDatos = async () => {
@@ -100,10 +102,16 @@ const DashboardPage = () => {
   const tareasHoy        = tareasPendientes.filter((t) => t.vencimiento?.startsWith?.(hoy));
   const mercadoPendiente = mercado.filter((i) => !i.comprado);
 
+  const ahorroAcumulado = historial.reduce((s, h) => s + Number(h.montoAhorro          || 0), 0);
+  const fondoAcumulado  = historial.reduce((s, h) => s + Number(h.montoFondoEmergencia || 0), 0);
+  const totalAhorrado   = ahorroAcumulado + fondoAcumulado;
+
+  const saldoMesAnt   = Number(presupuesto?.saldoAnterior || 0);
+
   const balanceLabel  = presupuesto ? "Disponible este mes" : "Sin presupuesto activo";
   const balanceAmount = presupuesto ? fmt(presupuesto.disponible) : "$0";
   const balanceSub    = presupuesto
-    ? `Ejecutado: ${Number(presupuesto.porcentajeEjec || 0).toFixed(0)}%`
+    ? `Ejecutado: ${Number(presupuesto.porcentajeEjec || 0).toFixed(0)}%${saldoMesAnt > 0 ? ` · +${fmtShort(saldoMesAnt)} del mes ant.` : ""}`
     : "Inicia tu presupuesto en Presupuesto";
 
   return (
@@ -130,6 +138,35 @@ const DashboardPage = () => {
           </Link>
         </div>
 
+        {/* Savings strip — ahorro + fondo acumulados en todos los meses */}
+        {totalAhorrado > 0 && (
+          <div className="dw-savings-strip">
+            <div className="dw-savings-strip__item">
+              <i className="bi bi-piggy-bank-fill" />
+              <div>
+                <span className="dw-savings-strip__label">Ahorro acumulado</span>
+                <span className="dw-savings-strip__val">{fmtShort(ahorroAcumulado)}</span>
+              </div>
+            </div>
+            <div className="dw-savings-strip__divider" />
+            <div className="dw-savings-strip__item">
+              <i className="bi bi-shield-check-fill" />
+              <div>
+                <span className="dw-savings-strip__label">Fondo emergencias</span>
+                <span className="dw-savings-strip__val">{fmtShort(fondoAcumulado)}</span>
+              </div>
+            </div>
+            <div className="dw-savings-strip__divider" />
+            <div className="dw-savings-strip__item dw-savings-strip__item--total">
+              <i className="bi bi-safe-fill" />
+              <div>
+                <span className="dw-savings-strip__label">Total guardado</span>
+                <span className="dw-savings-strip__val">{fmtShort(totalAhorrado)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Action icon grid */}
         <div className="dw-actions-grid">
           {ACTION_MODULES.map((m) => (
@@ -145,6 +182,15 @@ const DashboardPage = () => {
 
       {/* ── CONTENT PANEL — white rounded card ── */}
       <div className="dw-content-panel">
+        {/* Banner: sin presupuesto este mes */}
+        {!presupuesto && (
+          <div className="dw-no-budget-banner">
+            <i className="bi bi-exclamation-circle-fill" />
+            <span>No tienes presupuesto configurado para este mes.</span>
+            <Link to="/presupuesto" className="dw-no-budget-banner__link">Configurar</Link>
+          </div>
+        )}
+
         {/* Upcoming payments */}
         {proximas.length > 0 && (
           <>

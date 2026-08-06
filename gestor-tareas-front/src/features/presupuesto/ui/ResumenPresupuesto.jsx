@@ -21,7 +21,7 @@ const ResumenPresupuesto = ({ resumen, totalIngresos, balance }) => {
     presupuesto, totalGastado, ahorroProyectado,
     ingresosEfectivos: ingresosBackend,
     montoAhorro, montoFondoEmergencia,
-    presupuestoDisponible, saldoReal,
+    presupuestoDisponible, saldoReal, saldoAnterior,
   } = resumen;
 
   // Ingresos: usa el calculado por el backend si existe, si no cae a la prop o al salario
@@ -36,8 +36,9 @@ const ResumenPresupuesto = ({ resumen, totalIngresos, balance }) => {
     ? Math.min((gastado / disponible) * 100, 100).toFixed(1)
     : "0.0";
 
-  const pAhorro = Number(presupuesto?.porcentajeAhorro ?? 10);
-  const pFondo  = Number(presupuesto?.porcentajeFondoEmergencia ?? 5);
+  const pAhorro       = Number(presupuesto?.porcentajeAhorro ?? 10);
+  const pFondo        = Number(presupuesto?.porcentajeFondoEmergencia ?? 5);
+  const saldoMesAnt   = Number(saldoAnterior || 0);
 
   const subtituloIngresos = totalIngresos > 0 || ingresosBackend > 0
     ? "Ingresos variables registrados"
@@ -50,7 +51,11 @@ const ResumenPresupuesto = ({ resumen, totalIngresos, balance }) => {
         {tarjeta("bi-arrow-up-circle-fill", "Ingresos del mes",   fmt(ingresos),   "#10b981", subtituloIngresos)}
         {tarjeta("bi-piggy-bank-fill",       `Ahorro (${pAhorro}%)`, fmt(ahorro), "#059669", "Destinado a ahorro")}
         {tarjeta("bi-shield-check-fill",     `Emergencia (${pFondo}%)`, fmt(fondo), "#0891b2", "Fondo de emergencia")}
-        {tarjeta("bi-wallet2",               "Para gastos",        fmt(disponible), "#4f46e5", "Ingresos − fondos")}
+        {tarjeta("bi-wallet2", "Para gastos", fmt(disponible), "#4f46e5",
+          saldoMesAnt > 0
+            ? `Ingresos − fondos + ${fmt(saldoMesAnt)} anterior`
+            : "Ingresos − fondos"
+        )}
       </div>
 
       {/* Fila 2: Gastado → Saldo → Ejecución */}
@@ -106,6 +111,16 @@ const ResumenPresupuesto = ({ resumen, totalIngresos, balance }) => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Banner: saldo arrastrado del mes anterior */}
+      {saldoMesAnt > 0 && (
+        <div className="alert mt-3 mb-0" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.35)", borderRadius: 10, fontSize: "0.85rem", color: "#065f46", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <i className="bi bi-arrow-left-right" style={{ fontSize: "1rem", color: "#059669" }} />
+          <span>
+            Este mes incluye <strong>{fmt(saldoMesAnt)}</strong> sobrante del mes anterior que no fue gastado.
+          </span>
         </div>
       )}
 

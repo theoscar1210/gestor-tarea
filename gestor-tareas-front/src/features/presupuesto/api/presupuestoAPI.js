@@ -6,3 +6,4 @@ export const obtenerActual     = ()            => apiClient.get("/api/presupuest
 export const obtenerPorMes     = (mesAno)      => apiClient.get(`/api/presupuesto/${mesAno}`).then(r => r.data);
 export const agregarGasto      = (id, dto)     => apiClient.post(`/api/presupuesto/${id}/gastos`, dto).then(r => r.data);
 export const obtenerProyeccion = ()            => apiClient.get("/api/presupuesto/proyeccion").then(r => r.data);
+export const obtenerHistorial  = (meses = 24) => apiClient.get("/api/presupuesto/historial", { params: { meses } }).then(r => r.data);

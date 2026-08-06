@@ -61,6 +61,9 @@ CREATE TABLE gasto (
   FOREIGN KEY (categoria_id)   REFERENCES categoria_gasto(id)
 );
 
+-- Migración: saldo arrastrado entre meses
+ALTER TABLE presupuesto_mensual ADD COLUMN IF NOT EXISTS saldo_anterior DECIMAL(12,2) DEFAULT 0.00;
+
 -- Seed: Categorías método 50/30/20
 INSERT INTO categoria_gasto (nombre, tipo, porcentaje_sugerido, color) VALUES
   ('Vivienda / Arriendo',    'fijo',     30.00, '#4f46e5'),
