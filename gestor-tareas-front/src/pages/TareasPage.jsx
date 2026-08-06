@@ -71,8 +71,8 @@ const TareasPage = () => {
     const payload = {
       titulo:              datos.titulo,
       descripcion:         datos.descripcion ?? "",
-      vencimiento:         datos.vencimiento ?? datos.fecha ?? null,
-      prioridad:           datos.prioridad   ?? "",
+      vencimiento:         datos.vencimiento || datos.fecha || null,
+      prioridad:           datos.prioridad   || null,
       tipo:                datos.tipo        ?? "TAREA",
       horaInicio:          datos.horaInicio  ?? null,
       horaFin:             datos.horaFin     ?? null,

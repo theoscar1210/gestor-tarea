@@ -30,7 +30,7 @@ const QuickAdd = ({ onAgregar, contactos = [] }) => {
     onAgregar({
       ...EMPTY_FORM,
       ...parsed,
-      vencimiento: parsed.fecha ?? "",
+      vencimiento: parsed.fecha || null,
       textoNatural: texto,
     });
     setTexto("");

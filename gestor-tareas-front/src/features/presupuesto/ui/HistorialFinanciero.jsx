@@ -53,19 +53,21 @@ const HistorialFinanciero = ({ historial }) => {
 
   const entrada = historial.find(h => h.mesAno === mesFiltro) || historial[0];
 
-  const ingresos  = Number(entrada.totalIngresos || 0);
-  const ahorro    = Number(entrada.montoAhorro   || 0);
-  const fondo     = Number(entrada.montoFondoEmergencia || 0);
-  const gastos    = Number(entrada.totalGastos   || 0);
-  const saldoReal = Number(entrada.saldoReal     || entrada.saldo || 0);
-  const pAhorro   = Number(entrada.porcentajeAhorro || 10);
-  const detallado = entrada.tieneIngresosDetallados;
+  const ingresos       = Number(entrada.totalIngresos        || 0);
+  const ahorro         = Number(entrada.montoAhorro          || 0);
+  const fondo          = Number(entrada.montoFondoEmergencia || 0);
+  const totalDestinadoAhorro = ahorro + fondo;
+  const gastos         = Number(entrada.totalGastos          || 0);
+  const saldoReal      = ingresos - totalDestinadoAhorro - gastos;
+  const pAhorro        = Number(entrada.porcentajeAhorro     || 10);
+  const pFondo         = Number(entrada.porcentajeFondo      || 5);
+  const detallado      = entrada.tieneIngresosDetallados;
 
   const datosGrafico = [...historial].reverse().map(h => ({
     mes:      mesLabel(h.mesAno),
     mesAno:   h.mesAno,
     Ingresos: Number(h.totalIngresos || 0),
-    Ahorro:   Number(h.montoAhorro   || 0),
+    "Fondos destinados": Number(h.montoAhorro || 0) + Number(h.montoFondoEmergencia || 0),
     Gastos:   Number(h.totalGastos   || 0),
   }));
 
@@ -104,8 +106,10 @@ const HistorialFinanciero = ({ historial }) => {
           <div className="presup-card__icono" style={{ color: "#059669" }}><i className="bi bi-piggy-bank-fill" /></div>
           <div className="presup-card__body">
             <span className="presup-card__titulo">Ahorro destinado</span>
-            <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(ahorro)}</span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>{pAhorro}% del ingreso</span>
+            <span className="presup-card__valor" style={{ color: "#059669" }}>{fmt(totalDestinadoAhorro)}</span>
+            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+              Ahorro {pAhorro}% + Fondo {pFondo}%
+            </span>
           </div>
         </div>
         <div className="presup-card" style={{ borderTop: "3px solid #ef4444" }}>
@@ -113,6 +117,9 @@ const HistorialFinanciero = ({ historial }) => {
           <div className="presup-card__body">
             <span className="presup-card__titulo">Gastos totales</span>
             <span className="presup-card__valor" style={{ color: "#ef4444" }}>{fmt(gastos)}</span>
+            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+              {ingresos > 0 ? `${((gastos / ingresos) * 100).toFixed(1)}% del ingreso` : "—"}
+            </span>
           </div>
         </div>
         <div className="presup-card" style={{ borderTop: saldoReal >= 0 ? "3px solid #4f46e5" : "3px solid #f59e0b" }}>
@@ -124,7 +131,7 @@ const HistorialFinanciero = ({ historial }) => {
             <span className="presup-card__valor" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
               {saldoReal >= 0 ? "+" : ""}{fmt(saldoReal)}
             </span>
-            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>Sin fondos destinados</span>
+            <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>Ingresos − ahorro − gastos</span>
           </div>
         </div>
       </div>
@@ -141,9 +148,9 @@ const HistorialFinanciero = ({ historial }) => {
             <YAxis tickFormatter={fmtK} tick={{ fontSize: 11 }} width={62} />
             <Tooltip content={<TooltipCustom />} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Ahorro"   fill="#059669" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Gastos"   fill="#ef4444" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Ingresos"          fill="#10b981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Fondos destinados" fill="#059669" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Gastos"            fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -158,8 +165,7 @@ const HistorialFinanciero = ({ historial }) => {
             <tr>
               <th>Mes</th>
               <th className="text-end" style={{ color: "#10b981" }}>Ingresos</th>
-              <th className="text-end d-none d-sm-table-cell" style={{ color: "#059669" }}>Ahorro est.</th>
-              <th className="text-end d-none d-sm-table-cell" style={{ color: "#0891b2" }}>Fondo emerg.</th>
+              <th className="text-end d-none d-sm-table-cell" style={{ color: "#059669" }}>Fondos destinados</th>
               <th className="text-end" style={{ color: "#ef4444" }}>Gastos</th>
               <th className="text-end">Saldo real</th>
             </tr>
@@ -169,10 +175,9 @@ const HistorialFinanciero = ({ historial }) => {
               <td><strong>{mesLabel(mesFiltro)}</strong></td>
               <td className="text-end">{fmt(ingresos)}</td>
               <td className="text-end d-none d-sm-table-cell" style={{ color: "#059669" }}>
-                {fmt(ahorro)}
-                <span style={{ fontSize: "0.7rem", color: "#6b7280" }}> ({pAhorro}%)</span>
+                {fmt(totalDestinadoAhorro)}
+                <span style={{ fontSize: "0.7rem", color: "#6b7280" }}> ({pAhorro + pFondo}%)</span>
               </td>
-              <td className="text-end d-none d-sm-table-cell" style={{ color: "#0891b2" }}>{fmt(fondo)}</td>
               <td className="text-end" style={{ color: "#ef4444" }}>{fmt(gastos)}</td>
               <td className="text-end fw-bold" style={{ color: saldoReal >= 0 ? "#4f46e5" : "#f59e0b" }}>
                 {saldoReal >= 0 ? "+" : ""}{fmt(saldoReal)}
